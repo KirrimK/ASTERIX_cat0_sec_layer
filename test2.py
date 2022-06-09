@@ -4,10 +4,13 @@ from nacl.exceptions import BadSignatureError
 import random
 import time
 
+
+
 def radar(n):
+    asterix_msg_size = 48
     res = []
     for _ in range(n):
-        res.append(random.randbytes(48))
+        res.append(random.randbytes(asterix_msg_size))
     return res
 
 def sign(message, pkey):
