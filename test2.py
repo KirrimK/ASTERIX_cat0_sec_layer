@@ -1,10 +1,7 @@
-import base64
 from nacl.signing import SigningKey
 from nacl.exceptions import BadSignatureError
 import random
 import time
-
-
 
 def radar(n):
     asterix_msg_size = 48
@@ -47,9 +44,3 @@ if __name__ == '__main__':
     print('Both average time: {} ms\n'.format( ((global_all_verified_time - global_start_time) / number) * 1000) )
     print('Max signing time: {} ms'.format( max_sign_time * 1000))
     print('Max verify time: {} ms'.format( max_verify_time * 1000))
-
-
-
-
-
-
