@@ -14,10 +14,10 @@ def verify_message(signature, message, pkey):
     pkey.verify(message, signature)
 
 if __name__ == '__main__':
-    print("Signing and verifying times for nacl")
     sign_times, verify_times = generic_test.test_sign_verify_times(keypair_generator,
                                         sign_message,
                                         verify_message,
                                         10000,
                                         48)
-    generic_test.test_statistics(sign_times, verify_times)
+    generic_test.test_statistics("nacl", sign_times, verify_times)
+    generic_test.graph_results(sign_times, verify_times)
