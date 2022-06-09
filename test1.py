@@ -13,6 +13,11 @@ def radar(n):
 def sign(message: bytes, pkey: ed25519.SigningKey):
     return pkey.sign(message)
 
+# tell me what this code does
+# this code is the same as test2.py
+# the only difference is that
+# we use ed25519 instead of nacl
+
 if __name__ == '__main__':
     private_key, public_key = ed25519.create_keypair()
     number = 10000
@@ -43,3 +48,4 @@ if __name__ == '__main__':
     print('Both average time: {} ms\n'.format( ((global_all_verified_time - global_start_time) / number) * 1000) )
     print('Max signing time: {} ms'.format( max_sign_time * 1000))
     print('Max verify time: {} ms'.format( max_verify_time * 1000))
+
