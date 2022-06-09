@@ -11,7 +11,8 @@ public_key = private_key.verify_key
 
 
 if __name__ == '__main__':
-        original = bytes((''.join(str(random.randint(0, 1)) for _ in range(48))), encoding="utf-8")
+        asterix_msg_size = 48
+        original = random.randbytes(asterix_msg_size)
         print(original)
         print(private_key)
 
