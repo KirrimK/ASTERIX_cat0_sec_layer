@@ -44,17 +44,31 @@ def test_sign_verify_times(pri_pub_keys_generator, sign_function, verify_functio
 # displays statistics about the times of a library
 # in: list_sign_times: list of times it took to sign a message
 # in: list_verify_times: list of times it took to verify a signature
-def display_results(list_sign_times: list, list_verify_times: list):
+def test_statistics(test_name: str, list_sign_times: list, list_verify_times: list):
+    print("--- Signing and verifying times for " + test_name + " ---")
     def average(lst):
         return sum(lst) / len(lst)
-    global_sign_time = sum(list_sign_times)
-    global_verify_time = sum(list_verify_times)
-    print('Total Signing time: {} ms'.format((global_sign_time)*1000))
-    print('Total Verify time: {} ms'.format((global_verify_time)*1000))
-    print('Total time: {} ms\n'.format((global_sign_time + global_verify_time)*1000))
-    print('Signing average time: {} ms'.format((average(list_sign_times))*1000))
-    print('Verify average time: {} ms'.format((average(list_verify_times))*1000))
+    global_sign_time = sum(list_sign_times) * 1000
+    global_verify_time = sum(list_verify_times) * 1000
+    avg_sign = (average(list_sign_times))*1000
+    avg_verify = (average(list_verify_times))*1000
+    max_sgn = max(list_sign_times)*1000
+    max_ver = max(list_verify_times)*1000
     both_times = list(map(operator.add, list_sign_times, list_verify_times))
-    print('Both average time: {} ms\n'.format((average(both_times))*1000))
-    print('Max signing time: {} ms'.format(max(list_sign_times)*1000))
-    print('Max verify time: {} ms'.format(max(list_verify_times)*1000))
+    avg_both = (average(both_times))*1000
+    print('Total Signing time: {} ms'.format(global_sign_time))
+    print('Total Verify time: {} ms'.format(global_verify_time))
+    print('Total time: {} ms\n'.format((global_sign_time + global_verify_time)))
+    print('Signing average time: {} ms'.format(avg_sign))
+    print('Verify average time: {} ms'.format(avg_verify))
+    print('Both average time: {} ms\n'.format(avg_both))
+    print('Max signing time: {} ms'.format(max_sgn))
+    print('Max verify time: {} ms'.format(max_ver))
+    return global_sign_time, global_verify_time, avg_sign, avg_verify, avg_both, max_sgn, max_ver
+
+def graph_results(list_sign_times: list, list_verify_times: list):
+    import matplotlib.pyplot as plt
+    plt.plot(list_sign_times, label='Signing')
+    plt.plot(list_verify_times, label='Verification')
+    plt.legend()
+    plt.show()

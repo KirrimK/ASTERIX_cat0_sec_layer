@@ -17,4 +17,4 @@ if __name__ == '__main__':
                                         verify_message,
                                         10000,
                                         48)
-    generic_test.display_results(sign_times, verify_times)
+    generic_test.test_statistics(sign_times, verify_times)
