@@ -25,7 +25,7 @@ if __name__ == '__main__':
     public_key = private_key.verify_key
     with open('tests/publicKey.txt', 'wb+') as puKey:
         puKey.write(public_key.encode(encoder=Base64Encoder))
-    lst_message = radar(10000)
+    lst_message = radar(1000)
     tic = time.process_time()
 
     with open(ORIG_FILE_LCT, 'rb+') as f:
@@ -52,9 +52,9 @@ if __name__ == '__main__':
     print('Signing time: {} ms\n'.format((tac-tic)*1000))
     print('Decoding time: {} ms\n'.format( (toc - tac) * 1000) )
     print('Total time: {} ms\n'.format( (toc - tic) * 1000) )
-    print('Signing average time: {} ms\n'.format( ((tac - tic) / 10000)* 1000) )
-    print('Decoding average time: {} ms\n'.format( ((toc - tac) / 10000) * 1000) )
-    print('Both average time: {} ms\n'.format( ((toc - tic) / 10000) * 1000) )
+    print('Signing average time: {} ms\n'.format( ((tac - tic) / 1000)* 1000) )
+    print('Decoding average time: {} ms\n'.format( ((toc - tac) / 1000) * 1000) )
+    print('Both average time: {} ms\n'.format( ((toc - tic) / 1000) * 1000) )
 
 
 
