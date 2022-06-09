@@ -7,7 +7,7 @@ import time
 def radar(n):
     res = []
     for _ in range(n):
-        res.append(bytes((''.join(str(random.randint(0, 1)) for _ in range(48))), encoding="utf-8"))
+        res.append(random.randbytes(48))
     return res
 
 def sign(message, pkey):
