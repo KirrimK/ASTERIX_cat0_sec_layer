@@ -4,9 +4,10 @@ import random
 import time
 
 def radar(n):
+    asterix_msg_size = 48
     res = []
     for _ in range(n):
-        res.append(bytes((''.join(str(random.randint(0, 1)) for _ in range(48))), encoding="utf-8"))
+        res.append(random.randbytes(asterix_msg_size))
     return res
 
 def sign(message, pkey):
