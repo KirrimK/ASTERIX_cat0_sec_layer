@@ -1,4 +1,4 @@
-from nacl.signing import SigningKey
+from nacl.signing import SigningKey, VerifyKey
 from nacl.exceptions import BadSignatureError
 import generic_test
 
@@ -7,10 +7,10 @@ def keypair_generator():
     public_key = private_key.verify_key
     return private_key, public_key
 
-def sign_message(message, pkey):
+def sign_message(message: bytes, pkey: SigningKey):
     return pkey.sign(message).signature
 
-def verify_message(signature, message, pkey):
+def verify_message(signature: bytes, message: bytes, pkey: VerifyKey):
     pkey.verify(message, signature)
 
 if __name__ == '__main__':
