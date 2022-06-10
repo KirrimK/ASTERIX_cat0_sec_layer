@@ -11,6 +11,10 @@ import random
 #To establish time performance of the code execution
 import time as t
 
+#To visualize the result 
+import matplotlib.pyplot as plt
+
+#PyNaCl Library
 import nacl.utils
 from nacl.public import PrivateKey, Box
 
@@ -25,6 +29,7 @@ if __name__ == '__main__':
     n = 1000
     start_code = t.time()
     messages=radar(n)
+    iteration_times=[]
     for msg in messages :
         start_iteration=t.time()
         # Generate Sender's private key, which must be kept secret
@@ -61,7 +66,14 @@ if __name__ == '__main__':
         plaintext = receiver_box.decrypt(encrypted)
         #print(plaintext)
         end_iteration=t.time()
+        iteration_times.append((end_iteration-start_iteration)*1000)
+        
     end_code = t.time()
 
     print('Total time: {} ms\n'.format( (end_code - start_code) * 1000) )
     print('Whole process average time by msg: {} ms\n'.format( ((end_code- start_code) / n) * 1000) )
+    values=[min(iteration_times), ((end_code- start_code) / n) * 1000,max(iteration_times)]
+    names=['Min Signing and \nDecoding','Average Signing and \nDecoding Time','Max Signing and \nDecoding']
+    
+    plt.bar(names,values)
+    plt.show()
