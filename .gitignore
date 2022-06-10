@@ -2,3 +2,5 @@ __pycache__/*
 venv/*
 .idea/*
 tests/*
+test/*
+SGN_FILE_DST
