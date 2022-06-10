@@ -14,7 +14,7 @@ import time as t
 import nacl.utils
 from nacl.public import PrivateKey, Box
 
-def radar(n):
+def radar(n : int):
     asterix_msg_size = 48
     res = []
     for _ in range(n):
