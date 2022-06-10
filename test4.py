@@ -50,6 +50,8 @@ def receive(message):
 
 if __name__ == '__main__':
     nb = 10000
+    list_sign_times = []
+    list_verify_times = []
     radar(nb)
     private_key = SigningKey.generate()
     with open('tests/privateKeyI&A.txt', 'wb+') as prKey:
@@ -64,10 +66,12 @@ if __name__ == '__main__':
         with open('tests/sentI&A.txt', 'wb+') as fic:
             fic.truncate()
             for line in f:
+                local_sign_start = time.process_time()
                 lineCleanedBytes = line.strip()
                 signed = send(lineCleanedBytes, public_key, private_key)
                 fic.write(signed)
                 fic.write(b'\n')
+                list_sign_times.append(time.process_time() - local_sign_start)
 
     tac = time.process_time()
 
@@ -75,12 +79,14 @@ if __name__ == '__main__':
 
     with open('tests/sentI&A.txt', 'rb+') as f2:
         for line in f2:
+            local_verify_start = time.process_time()
             lineCleanedb = line.strip()
             try:
                 if (receive(lineCleanedb)):
                     sucess += 1
             except BadSignatureError:
                 print('Wrong signature')
+            list_verify_times.append(time.process_time() - local_verify_start)
 
     toc = time.process_time()
     print("Sucess {} on {}".format(sucess, nb))
@@ -91,6 +97,10 @@ if __name__ == '__main__':
     print('Signing average time: {} ms\n'.format(((tac - tic) / nb) * 1000))
     print('Decoding average time: {} ms\n'.format(((toc - tac) / nb) * 1000))
     print('Both average time: {} ms\n'.format(((toc - tic) / nb) * 1000))
+    max_sgn = max(list_sign_times) * 1000
+    max_ver = max(list_verify_times) * 1000
+    print('Max signing time: {} ms'.format(max_sgn))
+    print('Max verify time: {} ms'.format(max_ver))
 
 
 
