@@ -1,4 +1,5 @@
 from nacl.signing import SigningKey, VerifyKey
+import nacl.public
 from nacl.exceptions import BadSignatureError
 import hashlib
 
@@ -10,11 +11,31 @@ def keypair_generator():
     public_key = private_key.verify_key
     return private_key, public_key
 
+# generates a keypair
+# out: private_key (PrivateKey): the private key
+# out: public_key (PublicKey): the public key
+def keypair_generator_maison():
+    private_key= nacl.public.PrivateKey.generate()
+    public_key = private_key.public_key
+    return private_key, public_key
+
 # returns the hash of the public key
 # in: pub_key (VerifyKey): the public key to hash
 # out: pub_key_hash (bytes): the hash of the public key
 def key_hash3_224(key: VerifyKey):
     return hashlib.sha3_224(key._key).digest()
+
+# returns the hash of the public key
+# in: pub_key (VerifyKey): the public key to hash
+# out: pub_key_hash (bytes): the hash of the public key
+def key_hash1(key: VerifyKey):
+    return hashlib.sha1(key._key).digest()
+
+# returns the hash of the public key
+# in: pub_key (PublicKey): the public key to hash
+# out: pub_key_hash (bytes): the hash of the public key
+def key_hash1_maison(key: nacl.public.PublicKey):
+    return hashlib.sha1(key._public_key).digest()
 
 # returns the signature of a message
 # in: message (bytes): the message to sign
@@ -51,6 +72,14 @@ def sign_and_assemble_message_key(message: bytes, pkey: SigningKey, pub: VerifyK
 def sign_and_assemble_message_hash3_224_key(message: bytes, pkey: SigningKey, pub: VerifyKey):
     return message + pkey.sign(message).signature + hashlib.sha3_224(pub._key).digest()
 
+# creates a message made of the original message, the signature and the sha1 hash of the public key concatenated
+# in: message (bytes): the message to sign
+# in: pkey (SigningKey): the private key to use
+# in: pub (VerifyKey): the public key to use
+# out: message_with_signature_and_key_hash (bytes): the message with the signature and the public key hash
+def sign_and_assemble_message_hash1_key(message: bytes, pkey: SigningKey, pub: VerifyKey):
+    return message + pkey.sign(message).signature + key_hash1(pub)
+
 # separates the message, the signature and the public key from a message and verifies the signature
 # in: message (bytes): the message to disassemble and verify
 # out: is_verified (bool): True if the signature is valid and the integrity of the message is ok, False otherwise
@@ -78,6 +107,7 @@ def dissassemble_and_verify_msg_hash3_224_key(key_dict: dict, big_message: bytes
     is_verified = verify_message(signature, message, VerifyKey(pub_key))
     return message, is_verified
 
+
 if __name__ == '__main__':
     pri, pub = keypair_generator() # generation of the keypair
     key_dict = {key_hash3_224(pub): pub._key} # the key dictionnary
@@ -94,3 +124,6 @@ if __name__ == '__main__':
     print(" Big message (hash3_224_key): "+ str(big_msg_hash)+ "\n\\ of size: "+str(len(big_msg_hash)))
     message_from_disassemble_hash, is_verified_hash = dissassemble_and_verify_msg_hash3_224_key(key_dict, big_msg_hash)
     print("Disassembled (hash3_224_key): "+ str(message_from_disassemble_hash)+ "\n\\ of size: "+str(len(message_from_disassemble_hash)))
+    big_msg_hash1 = sign_and_assemble_message_hash1_key(message_bytes, pri, pub)
+    print("Big message (hash1_key): "+ str(big_msg_hash1)+ "\n\\ of size: "+str(len(big_msg_hash1)))
+    
