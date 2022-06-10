@@ -83,6 +83,7 @@ if __name__ == '__main__':
     key_dict = {key_hash3_224(pub): pub._key} # the key dictionnary
     message = bytearray(48)
     message[:11] = b"Hello World"
+    message[45:] = b'fin'
     message_bytes = bytes(message)
     print("                     Message: "+ str(message_bytes)+ "\n\\ of size: "+str(len(message_bytes)))
     big_msg = sign_and_assemble_message_key(message_bytes, pri, pub)
