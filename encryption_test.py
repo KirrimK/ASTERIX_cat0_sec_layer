@@ -64,4 +64,4 @@ if __name__ == '__main__':
     end_code = t.time()
 
     print('Total time: {} ms\n'.format( (end_code - start_code) * 1000) )
-    print('Decoding average time: {} ms\n'.format( ((end_iteration - start_iteration) / n) * 1000) )
+    print('Whole process average time by msg: {} ms\n'.format( ((end_code- start_code) / n) * 1000) )
