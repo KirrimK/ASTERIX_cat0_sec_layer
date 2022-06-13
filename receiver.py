@@ -16,7 +16,7 @@ while True:
     try:
         print("received message from {}: {}".format(addr, data))
         print("\\ of len: "+ str(len(data)))
-        ok, decoded = main.disassemble_and_verify_msg_sha1_hash(data, key_dict)
+        decoded, ok = main.disassemble_and_verify_msg_sha1_hash(data, key_dict)
         print("decoded message: {}".format(decoded))
         if ok:
             print("message verified")
