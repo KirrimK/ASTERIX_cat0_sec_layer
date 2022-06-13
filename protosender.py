@@ -11,12 +11,12 @@ N=100000
 
 sock = socket.socket(socket.AF_INET, # Internet
                      socket.SOCK_DGRAM) # UDP
+key = bytes(20)
 
 start=time.time()
 while(N>0):                    
     message=random.randbytes(48)
     #print("message : {}".format(message))
-    key = bytes(20)
     #print("key: {}".format(key))
     big_msg = main.sign_and_assemble_message_sha1_hash(message, key)
     #print("big_msg: {}".format(big_msg))
