@@ -1,7 +1,7 @@
 import main
 import socket
 
-UDP_IP = "192.168.1.174"
+UDP_IP = "192.168.1.172"
 UDP_PORT = 42069
 message = bytearray(48)
 message[:11] = b"Hello World"
