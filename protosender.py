@@ -2,7 +2,7 @@ import main
 import socket
 
 UDP_IP = "192.168.1.172"
-UDP_PORT = 5005
+UDP_PORT = 42069
 message = bytearray(48)
 message[:11] = b"Hello World"
 message[45:] = b'fin'
