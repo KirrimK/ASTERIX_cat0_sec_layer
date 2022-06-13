@@ -125,7 +125,6 @@ def verify_sha1(signature: bytes, message: bytes, secret: bytes):
         h.verify(signature)
         return True
     except Exception as e:
-        print(e)
         return False
 
 # returns the SHA1 hash of a bytes array
