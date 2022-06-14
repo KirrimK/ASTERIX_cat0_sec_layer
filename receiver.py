@@ -26,4 +26,3 @@ while True:
             print("message not verified")
     except Exception as e:
         print(e)
-print(C)
