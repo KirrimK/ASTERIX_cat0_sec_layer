@@ -1,14 +1,19 @@
 import base64
+
+from numpy import CLIP
 import lib
 import socket
+
 
 sock = socket.socket(socket.AF_INET, # Internet
                      socket.SOCK_DGRAM) # UDP
 
 print("Enter IP of key server:")
-SER_IP = input()
+IP_SER = input()
+SER_IP = "127.0.0.1" if IP_SER == "" else str(IP_SER)
 print("Enter port of key server:")
-SER_PORT = int(input())
+PORT_SER = input()
+SER_PORT = 42070 if PORT_SER == "" else int(PORT_SER)
 pri, pub = lib.keypair_generator()
 
 hash_pub = lib.key_hash1(pub)
@@ -20,10 +25,11 @@ sock.sendto(payload, (SER_IP, SER_PORT))
 print("Sent key to key server")
 
 print("Enter IP of client:")
-CLI_IP = input()
-print("Enter port of client (42070):")
+IP_CLI = input()
+CLI_IP = "192.168.1.174" if IP_CLI == "" else str(IP_CLI)
+print("Enter port of client (42069):")
 PORT = input()
-CLI_PORT = 42070 if PORT == "" else int(PORT)
+CLI_PORT = 42069 if PORT == "" else int(PORT)
 
 
 done = False

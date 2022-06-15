@@ -55,6 +55,6 @@ def dissassemble_and_verify_msg_hash_key(key_dict: dict, big_message: bytes):
     pub_key = key_dict.get(pub_key_hash, None)
     if pub_key is None:
         print("Public key not found") # TODO: raise exception or log error
-        return False, message
+        return message, False
     is_verified = verify_message(signature, message, VerifyKey(pub_key))
     return message, is_verified
