@@ -33,7 +33,7 @@ while True:
     #Reception des messages du radar
     data, addr = sock1.recvfrom(1024)
     if data : 
-        print(data)
+        print("data : "+str(data))
         pub_key_hash = data[48+64:]
         print("Length of hash: "+str(len(pub_key_hash)))
         print(pub_key_hash)
@@ -41,14 +41,18 @@ while True:
         messages_list.append(data)
     #Contacter serveur pour demande clé publique
     for hash in key_dict:
+        print("hash : "+str(hash))
         sock2.sendto(hash, (IP_SERVEUR, SERVEUR_PORT))
         print("Sent hash to server")
         data2,addr = sock2.recvfrom(1024)
         if data2:
-            print(data2)
+            print("data2 : "+str(data2)+"len: "+str(len(data2)))
             header = data2[0]
-            hash = data2[1]
-            pkey = data2[2]
+            print("header : "+str(header))
+            hash = data2[1:21]
+            print("hash : "+str(hash))
+            pkey = data2[21:]
+            print("pkey : "+str(pkey)+"len: "+str(len(pkey)))
             if header == b'\x01':
                 key_dict[hash]=pkey
     
