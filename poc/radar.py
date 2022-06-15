@@ -4,9 +4,15 @@ from numpy import CLIP
 import lib
 import socket
 
+IP_RADAR="192.168.1.174"
+RADAR_PORT= 42071
+
+
 
 sock = socket.socket(socket.AF_INET, # Internet
                      socket.SOCK_DGRAM) # UDP
+
+sock.bind((IP_RADAR, RADAR_PORT))
 
 print("Enter IP of key server:")
 IP_SER = input()
