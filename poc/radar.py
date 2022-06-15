@@ -1,7 +1,6 @@
 import base64
 import lib
 import socket
-import random
 
 print("Enter IP of client:")
 CLI_IP = input()
