@@ -1,6 +1,7 @@
 import lib
+import socket
 
-UDP_IP = "192.168.1.172"
+UDP_IP = "192.168.1.174"
 UDP_PORT = 42069
 
 CLIENT_PORT = 42069
@@ -14,7 +15,7 @@ while True:
     data, (addr, port) = sock.recvfrom(1024)
     if len(data) == 32+20+1: #radar add key
         hash_ = data[:20]
-        new_key = VerifyKey(data[20:20+32])
+        new_key = lib.VerifyKey(data[20:20+32])
         is_ok = data[20+32]
         comp_hash = lib.key_hash1(new_key)
         if comp_hash != hash_:
@@ -26,7 +27,7 @@ while True:
             else:
                 key_dict.pop(hash_)
                 print("radar key removed")
-    else if len(data) == 20: #client asking hash of key
+    elif len(data) == 20: #client asking hash of key
         hash_ = data[:20]
         key_opt = key_dict.get(hash_, None)
         if key_opt is None:
