@@ -2,14 +2,29 @@ import base64
 import lib
 import socket
 
-print("Enter IP of client:")
-CLI_IP = input()
-print("Enter port of client:")
-CLI_PORT = int(input())
 sock = socket.socket(socket.AF_INET, # Internet
                      socket.SOCK_DGRAM) # UDP
+
+print("Enter IP of key server:")
+SER_IP = input()
+print("Enter port of key server:")
+SER_PORT = int(input())
 pri, pub = lib.keypair_generator()
-print("This radar's public key:"+str(base64.b64encode(pub._key)))
+
+hash_pub = lib.key_hash1(pub)
+
+payload = pub._key+hash_pub+b'\x01'
+print(len(payload))
+
+sock.sendto(payload, (SER_IP, SER_PORT))
+print("Sent key to key server")
+
+print("Enter IP of client:")
+CLI_IP = input()
+print("Enter port of client (42070):")
+PORT = input()
+CLI_PORT = 42070 if PORT == "" else int(PORT)
+
 
 done = False
 while not done:
