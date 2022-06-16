@@ -53,11 +53,16 @@ while True:
             print("hash : "+str(hash))
             pkey = data2[21:]
             print("pkey : "+str(pkey)+"len: "+str(len(pkey)))
-            if header == b'\x01':
+            if header == 1:
                 key_dict[hash]=pkey
+                print(key_dict[hash])
     
     for i in range(NB):
-        print(lib.dissassemble_and_verify_msg_hash_key(key_dict, messages_list[i]))
+        msg,flag=lib.dissassemble_and_verify_msg_hash_key(key_dict, messages_list[i])
+        if flag :
+            print("Message "+str(msg)+" has been verified")
+        else:
+            print("Message "+str(msg)+" could not been verified")
 
 
     
