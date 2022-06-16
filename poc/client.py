@@ -55,6 +55,8 @@ while True:
             if header == 1:
                 key_dict[hash]=pkey
                 print(key_dict[hash])
+            else :
+                print("No key found")
     
     for big_message in messages_list:
         msg,flag=lib.dissassemble_and_verify_msg_hash_key(key_dict, big_message)
