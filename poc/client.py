@@ -4,8 +4,7 @@
 import socket
 import lib
 
-#Nb de messages 
-NB=1
+
 
 #Creation du socket
 CLIENT_IP = "192.168.1.174"
@@ -57,8 +56,8 @@ while True:
                 key_dict[hash]=pkey
                 print(key_dict[hash])
     
-    for i in range(NB):
-        msg,flag=lib.dissassemble_and_verify_msg_hash_key(key_dict, messages_list[i])
+    for big_message in messages_list:
+        msg,flag=lib.dissassemble_and_verify_msg_hash_key(key_dict, big_message)
         if flag :
             print("Message "+str(msg)+" has been verified")
         else:
