@@ -1,6 +1,5 @@
 import base64
 
-from numpy import CLIP
 import lib
 import socket
 
