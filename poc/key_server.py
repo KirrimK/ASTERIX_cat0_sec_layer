@@ -32,7 +32,7 @@ while True:
             dict_hash = lib.sha1_of_dict(key_dict)
     elif len(data) == 20: #client asking hash of key
         hash_ = data[:20]
-        print("Received list hash from client at "+str(addr), end="")
+        print("Contacted by client at "+str(addr), end="")
         if dict_hash != hash_:
             print(": List is outdated, sending update")
             payload = len(key_dict.keys()).to_bytes(1, 'little')
