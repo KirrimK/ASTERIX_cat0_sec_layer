@@ -11,7 +11,11 @@ sock.bind((UDP_IP, UDP_PORT))
 
 
 
-key_dict = {}
+key_dict: dict[bytes] = {}
+
+
+dict_hash = lib.sha1_of_dict(key_dict)
+print("current hash of list is: {}".format((dict_hash)))
 
 while True:
     data, (addr, port) = sock.recvfrom(1024)
@@ -33,15 +37,20 @@ while True:
             else:
                 key_dict.pop(hash_)
                 print("radar key removed")
+            dict_hash = lib.sha1_of_dict(key_dict)
     elif len(data) == 20: #client asking hash of key
         hash_ = data[:20]
-        print(hash_)
-        key_opt = key_dict.get(hash_, None)
-        if key_opt is None:
-            payload = b'\x00'+hash_+bytes(32)
+        print("received hash from client: {}".format(hash_))
+        if dict_hash != hash_:
+            print("list has changed since client last fetched, sending update")
+            payload = len(key_dict.keys()).to_bytes(1, 'little')
+            for key, value in key_dict.items():
+                payload += key + value
+            print("payload: {}".format(str(payload)))
             sock.sendto(payload, (addr, CLIENT_PORT))
         else:
-            payload = b'\x01'+hash_+key_opt
+            print("list is up to date")
+            payload = b'\x00'+hash_
             sock.sendto(payload, (addr, CLIENT_PORT))
     else:
         print("rubbish message: "+str(data))

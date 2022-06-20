@@ -2,17 +2,19 @@
 
 
 import socket
+from time import time
 import lib
 
 
 
 #Creation du socket
-CLIENT_IP = "192.168.1.174"
+CLIENT_IP = "192.168.1.248"
 CLIENT_PORT = 42069
 
 IP_SERVEUR="127.0.0.1"
 SERVEUR_PORT= 42070
 
+TIME_BETWEEN_UPDATES = 60 #seconds
 
 sock1= socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock1.bind((CLIENT_IP, CLIENT_PORT))
@@ -25,41 +27,45 @@ sock2.bind((CLIENT_IP,SERVEUR_PORT))
 #Stockage des hashs des clés publiques
 messages_list = []
 key_dict = {}
+dict_hash = lib.sha1_of_dict(key_dict)
+
+def update_keylist():
+    dict_hash = lib.sha1_of_dict(key_dict)
+    #Contacter serveur pour mettre à jour dictionnaire des clés
+    print("checking dict hash with key server")
+    sock2.sendto(dict_hash, (IP_SERVEUR, SERVEUR_PORT))
+    print("sent, waiting response")
+    data2, (_, _) = sock2.recvfrom(2048) # TODO: check if sending address is the server address, otherwise ignore message
+    print("received data of length {} bytes".format(len(data2)))
+    if data2[0] == 0 and data2[1:] == dict_hash:
+        print("key list already up to date")
+    else:
+        print("key list to update")
+        key_dict.clear() #purge old keys
+        for i in range(data2[0]): #update keys
+            key   = data2[1+i*(20+32)+20:1+i*(20+32)+32+20]
+            hash_ = data2[1+i*(20+32)   :1+i*(20+32)+20]
+            key_verif = lib.VerifyKey(key)
+            verif_hash = lib.key_hash1(key_verif)
+            if verif_hash != hash_:
+                print(f"integrity check failed, ignoring key number {i}: \n {verif_hash} vs {hash_}")
+            else:
+                key_dict[hash_] = key
+                print(f"added key number {i} to key list (length {len(key)})")
+        dict_hash = lib.sha1_of_dict(key_dict)
 
 
+update_keylist()
+last_client_update = time()
 #Boucle de process
 while True:
     #Reception des messages du radar
     data, addr = sock1.recvfrom(1024)
-    if data : 
-        print("data : "+str(data))
-        pub_key_hash = data[48+64:]
-        print("Length of hash: "+str(len(pub_key_hash)))
-        print(pub_key_hash)
-        key_dict[pub_key_hash] = "NULL"
-        messages_list.append(data)
-    #Contacter serveur pour demande clé publique
-    for hash in key_dict:
-        print("hash : "+str(hash))
-        sock2.sendto(hash, (IP_SERVEUR, SERVEUR_PORT))
-        print("Sent hash to server")
-        data2,addr = sock2.recvfrom(1024)
-        if data2:
-            print("data2 : "+str(data2)+"len: "+str(len(data2)))
-            header = data2[0]
-            print("header : "+str(header))
-            hash = data2[1:21]
-            print("hash : "+str(hash))
-            pkey = data2[21:]
-            print("pkey : "+str(pkey)+"len: "+str(len(pkey)))
-            if header == 1:
-                key_dict[hash]=pkey
-                print(key_dict[hash])
-            else :
-                print("No key found")
-    
-    for big_message in messages_list:
-        msg,flag=lib.dissassemble_and_verify_msg_hash_key(key_dict, big_message)
+    if time() - last_client_update >= TIME_BETWEEN_UPDATES:
+        update_keylist()
+        last_client_update = time()
+    if data :
+        msg,flag=lib.dissassemble_and_verify_msg_hash_key(key_dict, data)
         if flag :
             print("Message "+str(msg)+" has been verified")
         else:

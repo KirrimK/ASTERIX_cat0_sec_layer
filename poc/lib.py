@@ -1,6 +1,6 @@
 from nacl.signing import SigningKey, VerifyKey
 from nacl.exceptions import BadSignatureError
-import hashlib
+import hashlib, base64
 
 # generates a keypair
 # out: private_key (SigningKey): the private key
@@ -54,7 +54,16 @@ def dissassemble_and_verify_msg_hash_key(key_dict: dict, big_message: bytes):
     pub_key_hash = big_message[48+64:]
     pub_key = key_dict.get(pub_key_hash, None)
     if pub_key is None:
-        print("Public key not found") # TODO: raise exception or log error
+        # TODO: raise exception or log error
         return message, False
     is_verified = verify_message(signature, message, VerifyKey(pub_key))
     return message, is_verified
+
+# returns the hash of some python object
+# in: some_dict (dict[bytes]): key dict
+# out: hash_ (bytes): hash of the dict
+def sha1_of_dict(some_dict: dict[bytes]):
+    dict_bytes = bytes()
+    for k, v in some_dict.items():
+        dict_bytes +=  k + v
+    return hashlib.sha1(dict_bytes).digest()
