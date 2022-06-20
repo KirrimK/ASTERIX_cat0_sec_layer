@@ -27,8 +27,11 @@ while True:
                 key_dict[hash_] = new_key._key
                 print(": Radar key added")
             else:
-                key_dict.pop(hash_)
-                print(": Radar key removed")
+                try:
+                    key_dict.pop(hash_)
+                    print(": Radar key removed")
+                except KeyError:
+                    print(": Radar key was already not present")
             dict_hash = lib.sha1_of_dict(key_dict)
     elif len(data) == 20: #client asking hash of key
         hash_ = data[:20]
