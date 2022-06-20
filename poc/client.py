@@ -32,15 +32,14 @@ dict_hash = lib.sha1_of_dict(key_dict)
 def update_keylist():
     dict_hash = lib.sha1_of_dict(key_dict)
     #Contacter serveur pour mettre à jour dictionnaire des clés
-    print("checking dict hash with key server")
+    print("[UPDATING KEY LIST]")
     sock2.sendto(dict_hash, (IP_SERVEUR, SERVEUR_PORT))
-    print("sent, waiting response")
     data2, (_, _) = sock2.recvfrom(2048) # TODO: check if sending address is the server address, otherwise ignore message
-    print("received data of length {} bytes".format(len(data2)))
+    print("\\ Received data of length {} bytes".format(len(data2)))
     if data2[0] == 0 and data2[1:] == dict_hash:
-        print("key list already up to date")
+        print("\\ Key list already up to date")
     else:
-        print("key list to update")
+        print("\\ Key list to update")
         key_dict.clear() #purge old keys
         for i in range(data2[0]): #update keys
             key   = data2[1+i*(20+32)+20:1+i*(20+32)+32+20]
@@ -48,10 +47,10 @@ def update_keylist():
             key_verif = lib.VerifyKey(key)
             verif_hash = lib.key_hash1(key_verif)
             if verif_hash != hash_:
-                print(f"integrity check failed, ignoring key number {i}: \n {verif_hash} vs {hash_}")
+                print(f"  \\ Integrity check failed, ignoring key number {i}:\n    -- {verif_hash} vs {hash_}")
             else:
                 key_dict[hash_] = key
-                print(f"added key number {i} to key list (length {len(key)})")
+                print(f"  \\ Added key number {i} to key list (length {len(key)})")
         dict_hash = lib.sha1_of_dict(key_dict)
 
 
@@ -66,10 +65,7 @@ while True:
         last_client_update = time()
     if data :
         msg,flag=lib.dissassemble_and_verify_msg_hash_key(key_dict, data)
-        if flag :
-            print("Message "+str(msg)+" has been verified")
-        else:
-            print("Message "+str(msg)+" could not been verified")
+        print(("[VERIFIED] " if flag else "[UNVERIFIED] ")+str(msg))
 
 
     

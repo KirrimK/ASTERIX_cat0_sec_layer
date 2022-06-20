@@ -11,6 +11,7 @@ sock = socket.socket(socket.AF_INET, # Internet
 
 sock.bind((IP_RADAR, RADAR_PORT))
 
+print("RADAR Simulator:")
 print("Enter IP of key server (127.0.0.1):")
 IP_SER = input()
 SER_IP = "127.0.0.1" if IP_SER == "" else str(IP_SER)
@@ -34,26 +35,31 @@ print("Enter port of client (42069):")
 PORT = input()
 CLI_PORT = 42069 if PORT == "" else int(PORT)
 
-
+print("Type messages to send to client (q to quit):")
 done = False
-try:
-    while not done:
-        print("> ", end="")
+while not done:
+    print("> ", end="")
+    message = "q"
+    try:
         message = input()
-        if message == "q":
-            done = True
-        else:
+    except EOFError:
+        print("EOF'd, quitting")
+    if message == "q":
+        done = True
+    else:
+        try:
             message_ba = bytearray(48)
             message_ba[:min(len(message), 48)] = bytes(message, "ascii")[:min(len(message), 48)]
             message_bytes = bytes(message_ba)
             big_msg = lib.sign_and_assemble_message_hash1_key(message_bytes, pri, pub)
-            print("Sending: "+str(big_msg)+"\n\\of len "+str(len(big_msg)))
             sock.sendto(big_msg, (CLI_IP, CLI_PORT))
-            print("Sent")
-except Exception as e:
-    print("Error: "+str(e))
-finally:
-    print("Quitting radar, sending key deactivation message to server")
-    payload = pub._key+hash_pub+b'\x00'
-    sock.sendto(payload, (SER_IP, SER_PORT))
-    print("sent, quitting")
+            print("-- sent")
+        except KeyboardInterrupt:
+            print("Interrupted, quitting")
+            done = True
+        except Exception as e:
+            print("Error: "+str(e))
+
+payload = pub._key+hash_pub+b'\x00'
+sock.sendto(payload, (SER_IP, SER_PORT))
+print("Sent deactivation message to key server, quitting.")
