@@ -1,15 +1,20 @@
 import lib
 import socket
+import struct
 
-IP_RADAR="192.168.1.248"
+IP_RADAR="192.168.1.193"
 RADAR_PORT= 42071
 
+multicast_group = ("224.1.1.1",10000)
 
 
 sock = socket.socket(socket.AF_INET, # Internet
                      socket.SOCK_DGRAM) # UDP
 
-sock.bind((IP_RADAR, RADAR_PORT))
+sock.settimeout(0.2)
+tt1 = struct.pack('b',1)
+sock.setsockopt(socket.IPPROTO_IP,socket.IP_MULTICAST_TTL,tt1)
+
 
 print("RADAR Simulator:")
 print("Enter IP of key server (127.0.0.1):")
@@ -52,7 +57,7 @@ while not done:
             message_ba[:min(len(message), 48)] = bytes(message, "ascii")[:min(len(message), 48)]
             message_bytes = bytes(message_ba)
             big_msg = lib.sign_and_assemble_message_hash1_key(message_bytes, pri, pub)
-            sock.sendto(big_msg, (CLI_IP, CLI_PORT))
+            sock.sendto(big_msg, multicast_group)
             print("-- sent")
         except KeyboardInterrupt:
             print("Interrupted, quitting")
