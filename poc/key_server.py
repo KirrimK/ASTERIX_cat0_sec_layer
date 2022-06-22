@@ -1,7 +1,7 @@
 import lib
 import socket
 
-UDP_IP = "127.0.0.1"
+UDP_IP = "192.168.1.193"
 UDP_PORT = 42070
 
 CLIENT_PORT = 42070

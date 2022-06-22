@@ -9,10 +9,10 @@ import struct
 
 
 #Creation du socket
-CLIENT_IP = "192.168.1.193"
+CLIENT_IP = "127.0.0.1"
 CLIENT_PORT = 42069
 
-IP_SERVEUR="127.0.0.1"
+IP_SERVEUR="192.168.1.193"
 SERVEUR_PORT= 42070
 
 multicast_group = "224.1.1.1"
