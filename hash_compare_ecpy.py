@@ -7,9 +7,14 @@ from ecpy.eddsa      import EDDSA
 
 import time
 
+#To visualize the result 
+import matplotlib.pyplot as plt
+
 NB=1000
 h_functions = [hashlib.sha256, hashlib.sha1, hashlib.sha224, hashlib.md5, hashlib.sha384]
 results=[]
+values=[]
+names = ["sha256", "sha1", "sha224", "md5","sha384"]
 
 if __name__ == "__main__":
    
@@ -39,6 +44,8 @@ if __name__ == "__main__":
         
             #Vérification de la signature
             algo.verify(msg,a,pu_key)
-        results.append(str(h_function)+":"+str(time.time()-global_start))
+        values.append(time.time()-global_start)
 
     print(results)
+    plt.bar(names,values)
+    plt.show()
