@@ -7,18 +7,9 @@ from time import time
 import lib_hmac
 import struct
 
-
-
 #Creation du socket
-CLIENT_IP = "127.0.0.1"
-CLIENT_PORT = 42069
-
-
-
 multicast_group = "224.1.1.1"
 radar_adress = ('',10000)
-
-TIME_BETWEEN_UPDATES = 15 #seconds
 
 sock1= socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock1.bind(radar_adress)
@@ -26,14 +17,8 @@ group = socket.inet_aton(multicast_group)
 mreq=struct.pack('4sL',group,socket.INADDR_ANY)
 sock1.setsockopt(socket.IPPROTO_IP,socket.IP_ADD_MEMBERSHIP,mreq)
 
-
 #Clé symétrique
 SECRET = bytes(20)
-
-
-
-
-
 
 #Boucle de process
 while True:
