@@ -28,10 +28,10 @@ def verify_sha1(signature: bytes, message: bytes, secret: bytes):
     except Exception:
         return False
 
-# creates a message made of the original message, the signature and the secret key concatenated
+# creates a message made of the original message, the signature
 # in: message (bytes): the message to sign
 # in: secret (bytes): the secret key to use
-# out: message_with_signature_and_key (bytes): the message with the signature and the secret key
+# out: message_with_signature_and_key (bytes): the message with the signature
 def sign_and_assemble_message_sha1(message: bytes, secret: bytes):
     return message + sign_sha1(message, secret)
 
