@@ -20,16 +20,18 @@ if __name__ == "__main__":
         #Algorithme cryptographique
         algo = EDDSA(h_function)
         global_start = time.time()
+
+        #Création de la clé privée
+        number = random.getrandbits(32)
+        pv_key = ECPrivateKey(number,edward_curve_1)
+        #Création de la clé publique
+        pu_key = EDDSA.get_public_key(pv_key,hasher=h_function)
         
         #Création de 1000 messages à signer
         for i in range(NB):
             msg=random.randbytes(48) 
             
-            #Création de la clé privée
-            number = random.getrandbits(32)
-            pv_key = ECPrivateKey(number,edward_curve_1)
-            #Création de la clé publique
-            pu_key = EDDSA.get_public_key(pv_key,hasher=h_function)
+            
             
 
             #Signature du message
