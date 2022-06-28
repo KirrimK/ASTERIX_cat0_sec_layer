@@ -3,7 +3,6 @@
 
 
 import socket
-from time import time
 import lib_hmac
 import struct
 
