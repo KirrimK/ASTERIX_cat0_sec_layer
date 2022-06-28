@@ -4,6 +4,7 @@
 
 import socket
 import lib_hmac
+from time import time
 import struct
 
 #Creation du socket
