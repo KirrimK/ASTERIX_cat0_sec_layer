@@ -27,5 +27,5 @@ while True:
     if data :
         start=time()
         msg,flag=lib_hmac.disassemble_and_verify_msg_sha1(data,SECRET)
-        print(("[VERIFIED] " +"temps:{}".format(time()-start)if flag else "[UNVERIFIED] ")+str(msg))
+        print(("[VERIFIED] " if flag else "[UNVERIFIED] ")+str(msg)+(" (temps:{})".format(time()-start)))
 
