@@ -25,6 +25,7 @@ while True:
     #Reception des messages du radar
     data, addr = sock1.recvfrom(1024)
     if data :
+        start=time()
         msg,flag=lib_hmac.disassemble_and_verify_msg_sha1(data,SECRET)
-        print(("[VERIFIED] " if flag else "[UNVERIFIED] ")+str(msg))
+        print(("[VERIFIED] " +"temps:{}".format(time()-start)if flag else "[UNVERIFIED] ")+str(msg))
 
