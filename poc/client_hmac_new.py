@@ -4,6 +4,7 @@
 import socket
 from time import time
 import lib_hmac
+import nacl
 import struct
 import threading
 
@@ -33,6 +34,10 @@ sock2.bind((CLIENT_IP,SERVEUR_PORT))
 messages_list = []
 secret = bytes(20)
 
+private_key = nacl.public.PrivateKey.generate()
+public_key = private_key.public_key
+print("This client's public key is: {}".format(public_key.hex()))
+
 STOP_UPDATE_THREAD = False
 
 def update_key():
@@ -40,6 +45,11 @@ def update_key():
         data, addr = sock2.recvfrom(1024)
         # decipher message and extract symmetric key
         # secret = ...
+        pub_key = data[-32:]
+        enc_secret = data[:-32]
+        decr_box = nacl.public.Box(nacl.public.PublicKey(pub_key), private_key)
+        secret = decr_box.decrypt(enc_secret)
+        print("[UPDATED KEY]")
 
 thd = threading.Thread(target=update_key)
 thd.start()
