@@ -4,18 +4,15 @@
 import socket
 from time import time
 import lib_hmac
-import nacl
+import nacl.public as public
 import struct
 import threading
 
-
+import select
 
 #Creation du socket
 CLIENT_IP = "127.0.0.1"
 CLIENT_PORT = 42069
-
-IP_SERVEUR="192.168.1.193"
-SERVEUR_PORT= 42070
 
 multicast_group = "224.1.1.1"
 radar_adress = ('',10000)
@@ -27,38 +24,29 @@ mreq=struct.pack('4sL',group,socket.INADDR_ANY)
 sock1.setsockopt(socket.IPPROTO_IP,socket.IP_ADD_MEMBERSHIP,mreq)
 
 sock2= socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock2.bind((CLIENT_IP,SERVEUR_PORT))
+sock2.bind((CLIENT_IP,CLIENT_PORT))
 
-
-#Stockage des hashs des clés publiques
-messages_list = []
 secret = bytes(20)
 
-private_key = nacl.public.PrivateKey.generate()
+private_key = public.PrivateKey(bytes(32))
 public_key = private_key.public_key
-print("This client's public key is: {}".format(public_key.hex()))
-
-STOP_UPDATE_THREAD = False
-
-def update_key():
-    while not STOP_UPDATE_THREAD:
-        data, addr = sock2.recvfrom(1024)
-        # decipher message and extract symmetric key
-        # secret = ...
-        pub_key = data[-32:]
-        enc_secret = data[:-32]
-        decr_box = nacl.public.Box(nacl.public.PublicKey(pub_key), private_key)
-        secret = decr_box.decrypt(enc_secret)
-        print("[UPDATED KEY]")
-
-thd = threading.Thread(target=update_key)
-thd.start()
+print("This client's public key is: {}".format(public_key))
 
 #Boucle de process
 while True:
     #Reception des messages du radar
-    data, addr = sock1.recvfrom(1024)
-    if data :
-        start=time()
-        msg,flag=lib_hmac.disassemble_and_verify_msg_sha1(data, secret)
-        print(("[VERIFIED] " if flag else "[UNVERIFIED] ")+str(msg)+(" (temps:{})".format(time()-start)))
+    ready_socks,_,_ = select.select([sock1, sock2], [], [])
+    for sock in ready_socks:
+        data, addr = sock.recvfrom(1024)
+        if sock == sock1:
+            if data :
+                start=time()
+                msg,flag=lib_hmac.disassemble_and_verify_msg_sha1(data, secret)
+                print(("[VERIFIED] " if flag else "[UNVERIFIED] ")+str(msg)+(" (temps:{})".format(time()-start)))
+        elif sock == sock2:
+            if data:
+                pub_key = data[-32:]
+                enc_secret = data[:-32]
+                decr_box = public.Box(private_key, public.PublicKey(pub_key))
+                secret = decr_box.decrypt(enc_secret)
+                print("[UPDATED KEY]")
