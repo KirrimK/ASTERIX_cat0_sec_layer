@@ -45,17 +45,10 @@ thd = threading.Thread(target=update_key)
 thd.start()
 
 #Boucle de process
-try:
-    while True:
-        #Reception des messages du radar
-        data, addr = sock1.recvfrom(1024)
-        if data :
-            start=time()
-            msg,flag=lib_hmac.disassemble_and_verify_msg_sha1(data, secret)
-            print(("[VERIFIED] " if flag else "[UNVERIFIED] ")+str(msg)+(" (temps:{})".format(time()-start)))
-except KeyboardInterrupt:
-    STOP_UPDATE_THREAD = True
-    thd.join()
-    sock1.close()
-    sock2.close()
-    print("Quitted")
+while True:
+    #Reception des messages du radar
+    data, addr = sock1.recvfrom(1024)
+    if data :
+        start=time()
+        msg,flag=lib_hmac.disassemble_and_verify_msg_sha1(data, secret)
+        print(("[VERIFIED] " if flag else "[UNVERIFIED] ")+str(msg)+(" (temps:{})".format(time()-start)))

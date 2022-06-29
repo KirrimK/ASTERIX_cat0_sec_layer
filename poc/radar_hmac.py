@@ -35,9 +35,8 @@ while not done:
             message_ba[:min(len(message), 48)] = bytes(message, "ascii")[:min(len(message), 48)]
             message_bytes = bytes(message_ba)
             big_msg = lib_hmac.sign_and_assemble_message_sha1(message_bytes, SECRET)
-            print("-- sent"+"temps : {}".format(time.time()-start))
             sock.sendto(big_msg, multicast_group)
-            
+            print("-- sent"+" (temps : {})".format(time.time()-start))
         except KeyboardInterrupt:
             print("Interrupted, quitting")
             done = True
