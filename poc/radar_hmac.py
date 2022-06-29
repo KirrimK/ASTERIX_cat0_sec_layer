@@ -22,6 +22,7 @@ sock.setsockopt(socket.IPPROTO_IP,socket.IP_MULTICAST_TTL,tt1)
 sock2 = socket.socket(socket.AF_INET, # Internet
                       socket.SOCK_DGRAM) # UDP
 sock2.bind((IP_RADAR, PORT_RADAR))
+sock2.settimeout(0.1)
 
 SECRET = bytes(20)
 END_THREAD = False
@@ -34,14 +35,16 @@ def update_key_thread():
     global END_THREAD
     print("Starting update key thread")
     while not END_THREAD:
-        data, addr = sock2.recvfrom(1024)
-        # decipher message and extract symmetric key
-        # secret = ...
-        pub_key = data[-32:]
-        enc_secret = data[:-32]
-        decr_box = public.Box(private_key, public.PublicKey(pub_key))
-        SECRET = decr_box.decrypt(enc_secret)
-        print("[UPDATED KEY]")
+        try:
+            data, addr = sock2.recvfrom(1024)
+            # decipher message and extract symmetric key
+            pub_key = data[-32:]
+            enc_secret = data[:-32]
+            decr_box = public.Box(private_key, public.PublicKey(pub_key))
+            SECRET = decr_box.decrypt(enc_secret)
+            print("[UPDATED KEY]")
+        except TimeoutError:
+            pass
     print("Ending update key thread")
 
 thd = threading.Thread(target=update_key_thread)
