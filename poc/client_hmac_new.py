@@ -6,7 +6,6 @@ from time import time
 import lib_hmac
 import nacl.public as public
 import struct
-import threading
 
 import select
 

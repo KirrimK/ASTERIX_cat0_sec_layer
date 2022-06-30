@@ -14,9 +14,10 @@ print("This key server's public key is: {}".format(public_key))
 list_of_all_agents_and_their_public_keys = {
     ("127.0.0.1", 42069): public_key.encode(),
     ("127.0.0.1", 42070): public_key.encode(),
+    ("192.168.1.193", 42069): public_key.encode(),
 }
 
-UPDATE_INTERVAL = 60
+UPDATE_INTERVAL = 15
 
 last_update = 0
 random.seed(time.time())
@@ -31,4 +32,3 @@ while True:
             agent_box = public.Box(private_key, public.PublicKey(pub_key))
             print(f"\\ sending to {agent}")
             sock.sendto(agent_box.encrypt(secret)+pub_key, agent)
-
