@@ -1,0 +1,6 @@
+{
+    "list_radars": [
+        {"ip": "192.168.1.248", "port": 42169, "pubkey": "2fe57da347cd62431528daac5fbb290730fff684afc4cfc2ed90995f58cb3b74"},
+        {"ip": "192.168.1.193", "port": 42169, "pubkey": "2fe57da347cd62431528daac5fbb290730fff684afc4cfc2ed90995f58cb3b74"}
+    ]
+}
