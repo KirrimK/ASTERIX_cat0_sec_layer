@@ -32,3 +32,4 @@ while True:
             agent_box = public.Box(private_key, public.PublicKey(pub_key))
             print(f"\\ sending to {agent}")
             sock.sendto(agent_box.encrypt(secret)+pub_key, agent)
+        print("\\ Overall took {} seconds".format(time.time() - last_update))
