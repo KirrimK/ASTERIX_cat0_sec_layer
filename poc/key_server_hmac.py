@@ -2,6 +2,7 @@ import random
 import nacl.public as public
 import time
 import socket
+import json
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 secret = bytes(20)
@@ -9,13 +10,15 @@ secret = bytes(20)
 private_key = public.PrivateKey(bytes(32))
 public_key = private_key.public_key
 
-print("This key server's public key is: {}".format(public_key))
+print("This key server's public key is: {}".format(public_key._public_key.hex()))
 
-list_of_all_agents_and_their_public_keys = {
-    ("127.0.0.1", 42069): public_key.encode(),
-    ("127.0.0.1", 42070): public_key.encode(),
-    ("192.168.1.193", 42069): public_key.encode(),
-}
+list_of_radars= {}
+
+cfp = input("Config file path:")
+cj: dict = json.load(open(cfp, "r"))
+for elt in cj["list_radars"]:
+    list_of_radars[(elt["ip"], int(elt["port"]))] = bytes(bytearray.fromhex(elt["pubkey"]))
+    print("Radar ({}:{}) pubkey: {}".format(elt["ip"], elt["port"], elt["pubkey"]))
 
 UPDATE_INTERVAL = 15
 
@@ -27,9 +30,8 @@ while True:
         last_update = time.time()
         secret = random.randbytes(20)
         print(f"[{last_update}] UPDATING KEY")
-        for agent, pub_key in list_of_all_agents_and_their_public_keys.items():
+        for agent, pub_key in list_of_radars.items():
             # cipher the key or whatever and send to the agent, along with own public key
             agent_box = public.Box(private_key, public.PublicKey(pub_key))
-            print(f"\\ sending to {agent}")
-            sock.sendto(agent_box.encrypt(secret)+pub_key, agent)
-        print("\\ Overall took {} seconds".format(time.time() - last_update))
+            sock.sendto(agent_box.encrypt(secret), agent)
+        print("\\ Overall took {} seconds".format(str(time.time() - last_update)[:6]))
