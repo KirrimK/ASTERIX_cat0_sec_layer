@@ -4,7 +4,7 @@
             "ip": "192.168.1.248",
             "pubkey": "2fe57da347cd62431528daac5fbb290730fff684afc4cfc2ed90995f58cb3b74"
         },
-        "bound_ip": "192.168.1.187",
+        "bound_ip": "192.168.1.193",
         "bound_port": 42069,
         "recipients": {
             "multicast_ip": "224.1.1.1",
@@ -17,17 +17,17 @@
     },
     {
         "key_server": {
-            "ip": "192.168.1.187",
+            "ip": "192.168.1.193",
             "pubkey": "2fe57da347cd62431528daac5fbb290730fff684afc4cfc2ed90995f58cb3b74"
         },
-        "bound_ip": "192.168.1.187",
+        "bound_ip": "192.168.1.193",
         "bound_port": 42169,
         "recipients": {
             "multicast_ip": "224.1.1.2",
             "multicast_port": 10000,
             "list_pubkeys": [
-                {"ip": "192.168.1.187",   "port": 42070, "pubkey": "2fe57da347cd62431528daac5fbb290730fff684afc4cfc2ed90995f58cb3b74"},
-                {"ip": "192.168.1.187",   "port": 42071, "pubkey": "2fe57da347cd62431528daac5fbb290730fff684afc4cfc2ed90995f58cb3b74"}
+                {"ip": "192.168.1.193",   "port": 42070, "pubkey": "2fe57da347cd62431528daac5fbb290730fff684afc4cfc2ed90995f58cb3b74"},
+                {"ip": "192.168.1.193",   "port": 42071, "pubkey": "2fe57da347cd62431528daac5fbb290730fff684afc4cfc2ed90995f58cb3b74"}
             ]
         }
     }
