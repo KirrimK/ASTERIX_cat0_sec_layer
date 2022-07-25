@@ -1,5 +1,9 @@
-#Client UDP recevant les messages Asterix et contactant le serveur
-
+"""
+Asterix security layer client
+Using a config file, it binds itself to a certain ip address and port to receive keys from known radars,
+and listens to a certain multicast group to receive signed messages from the network.
+When it receives a message, it verifies the signature and prints the message along with the verification result.
+"""
 
 import socket
 from time import time

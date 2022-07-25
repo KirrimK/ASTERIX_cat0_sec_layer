@@ -1,3 +1,10 @@
+"""
+Asterix security layer radar
+A config file is used to define usergroups that are made of a list of clients, and a key server.
+For each usergroup, the radar binds a socket to a certain ip address to receive keys from the key server.
+Those keys are forwarded (encrypted) to the clients and used to sign messages sent in the usergroup via udp multicast.
+"""
+
 import lib_hmac
 import socket
 import struct
@@ -55,7 +62,7 @@ for elt in cj:
 
 
 print("RADAR Simulator:")
-print("Type messages to send to multicast group (q to quit):")
+print("Type messages to send to multicast groups (q to quit):")
 done = False
 while not done:
     print("> ", end="")

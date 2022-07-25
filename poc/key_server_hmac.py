@@ -1,8 +1,14 @@
+"""
+Asterix security layer key server
+Using a config file, it sends keys to known radars periodically.
+"""
+
 import random
 import nacl.public as public
 import time
 import socket
 import json
+import lib_hmac
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 secret = bytes(20)
@@ -28,7 +34,7 @@ while True:
     time.sleep(0.5)
     if time.time() - last_update > UPDATE_INTERVAL:
         last_update = time.time()
-        secret = random.randbytes(20)
+        secret = lib_hmac.gen_secret()
         print(f"[{last_update}] UPDATING KEY")
         for agent, pub_key in list_of_radars.items():
             # cipher the key or whatever and send to the agent, along with own public key
