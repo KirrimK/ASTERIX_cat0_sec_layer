@@ -1,0 +1,17 @@
+{
+    "user_groups": [
+        {
+            "iek_path": "config/iek1",
+            "ca_ip": "127.0.0.1",
+            "ca_port": 42070,
+            "ca_multicast_ip": "224.1.1.1",
+            "ca_multicast_port": 10000,
+
+            "expected_receivers": [
+                {"ip": "127.0.0.1", "port": 42071}
+            ],
+            "asterix_multicast_ip": "224.1.1.2",
+            "asterix_multicast_port": 10001
+        }
+    ]
+}

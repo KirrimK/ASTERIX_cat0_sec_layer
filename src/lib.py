@@ -11,38 +11,33 @@ import os
 from Crypto.Cipher import AES
 import time
 
-IEK = None
-
-def load_IEK_from_file(filepath: str) -> None:
+def load_IEK_from_file(filepath: str) -> bytes:
     """
     Loads the Initiation Encryption Key from a file and installs it.
     Should be run only once at the start of the agent.
     """
-    global IEK
+    iek = None
     with open(filepath, 'rb') as file:
-        IEK = file.read()
+        iek = file.read()
+    return iek
 
-def aes_iek_cipher(plaintext: bytes) -> bytes:
+def aes_iek_cipher(iek: bytes, plaintext: bytes) -> bytes:
     """
     Encrypts the plaintext (supposedly a public key in our use cases)
     using AES 128-bit encryption and the IEK.
     Returns the resulting ciphertext.
-    Fails if the IEK isn't set.
     """
-    global IEK
-    cipher = AES.new(IEK, AES.MODE_EAX)
+    cipher = AES.new(iek, AES.MODE_EAX)
     ciphertext, tag = cipher.encrypt_and_digest(plaintext)
     return cipher.nonce + tag + ciphertext
 
-def aes_iek_decipher(nonce: bytes, tag: bytes, ciphertext: bytes) -> bytes:
+def aes_iek_decipher(iek: bytes, nonce: bytes, tag: bytes, ciphertext: bytes) -> bytes|None:
     """
     Decrypts the plaintext (supposedly a public key in our use cases)
     using AES 128-bit encryption and the IEK.
     Returns the resulting plaintext.
-    Fails if the IEK isn't set.
     """
-    global IEK
-    cipher = AES.new(IEK, AES.MODE_EAX, nonce=nonce)
+    cipher = AES.new(iek, AES.MODE_EAX, nonce=nonce)
     plaintext = cipher.decrypt(ciphertext)
     try:
         cipher.verify(tag)

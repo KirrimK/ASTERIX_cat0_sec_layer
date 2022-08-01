@@ -9,4 +9,11 @@ and receives Sensor public keys used to verify the authenticity of secrets sent 
 Those secrets are then used to verify the authenticity of each ASTERIX message sent by a sensor.
 """
 
-import lib
+import lib, json
+
+IEK: bytes = lib.load_IEK_from_file("config/iek")
+
+# getting configuration from files
+config: dict = json.loads(input("Config path?"))
+
+# -----
