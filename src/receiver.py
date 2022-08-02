@@ -26,6 +26,8 @@ MULTICAST_IP: str = CONFIG["multicast_ip"]
 MULTICAST_PORT: int = CONFIG["multicast_port"]
 # -----
 
+IPADDR = socket.gethostbyname(socket.gethostname()) 
+
 # request public key from CA
 CA_VERIFYKEY: lib.signing.VerifyKey = lib.get_ca_public_key(IEK, CA_IP, CA_PORT)
 if CA_VERIFYKEY is None:
@@ -82,6 +84,8 @@ while True:
     msg = data[:48]
     sign = data[48:]
     sec = SENSOR_SECRETS.get(addr, None)
+    if sec is None and addr == IPADDR: # a hack for sending message on the same computer
+        sec = SENSOR_SECRETS.get("127.0.0.1", None)
     if sec is None:
         print(f"Message from {addr}: "+str(msg)+" (unverified, no key)")
     else:

@@ -87,13 +87,25 @@ def update_secret() -> None:
 
 refresh_keypair()
 update_secret()
+
 sockmt = socket.socket(socket.AF_INET,
                          socket.SOCK_DGRAM)
 sockmt.settimeout(0.5)
-message = input()
-message_ba = bytearray(48)
-message_ba[:min(len(message), 48)] = bytes(message, "ascii")[:min(len(message), 48)]
-message_bytes = bytes(message_ba)
-for group in GROUPS:
-    sign = lib.hmac_sign(SECRET, message_bytes)
-    sockmt.sendto(message_bytes + sign, (group["asterix_multicast_ip"], group["asterix_multicast_port"]))
+
+DONE = False
+while not DONE:
+    message = ""
+    try:
+        message = input()
+    except KeyboardInterrupt:
+        DONE = True
+        break
+    if message == "q":
+        DONE = True
+        break
+    message_ba = bytearray(48)
+    message_ba[:min(len(message), 48)] = bytes(message, "ascii")[:min(len(message), 48)]
+    message_bytes = bytes(message_ba)
+    for group in GROUPS:
+        sign = lib.hmac_sign(SECRET, message_bytes)
+        sockmt.sendto(message_bytes + sign, (group["asterix_multicast_ip"], group["asterix_multicast_port"]))
