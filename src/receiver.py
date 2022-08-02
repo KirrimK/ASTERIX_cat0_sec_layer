@@ -11,6 +11,8 @@ Those secrets are then used to verify the authenticity of each ASTERIX message s
 
 import lib, json
 import sys
+import socket
+import threading
 
 # getting configuration from files
 CONFIG: dict = json.load(open(sys.argv[1], "r"))
@@ -27,7 +29,34 @@ MULTICAST_PORT: int = CONFIG["multicast_port"]
 CA_VERIFYKEY: lib.signing.VerifyKey = lib.get_ca_public_key(IEK, CA_IP, CA_PORT)
 if CA_VERIFYKEY is None:
     print("[Receiver] Error when tried to get CA's PubKey")
-    sys.exit(1)
-print("[Receiver] Got CA's PubKey: "+str(CA_VERIFYKEY))
+else:
+    print("[Receiver] Got CA's PubKey: "+str(CA_VERIFYKEY))
 
 SENSOR_KEYS: dict[str] = {}
+
+def listen_sensor_keys():
+    global SENSOR_KEYS, CA_VERIFYKEY
+    sock = socket.socket()
+    try:
+        sock.bind((BOUND_IP, BOUND_PORT))
+        sock.listen()
+        while True:
+            client, (address, port) = sock.accept()
+            data = client.recv(2048)
+            client.close()
+            decr_signedmsg = lib.fernet_iek_decipher(IEK, data)
+            msg = decr_signedmsg[:-64]
+            signature = decr_signedmsg[-64:]
+            if lib.eddsa_verify(CA_VERIFYKEY, signature, msg):
+                SENSOR_KEYS[address] = lib.signing.VerifyKey(msg)
+                print(f"[Receiver] Sensor ({address}) updated its PubKey")
+            else:
+                SENSOR_KEYS[address] = None
+                print(f"[Receiver] Sensor ({address}) tried to update its key, but could not be trusted")
+    except Exception as e:
+        print(e)
+
+thd = threading.Thread(target=listen_sensor_keys)
+thd.run()
+
+input()

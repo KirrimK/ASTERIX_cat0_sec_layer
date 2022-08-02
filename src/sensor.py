@@ -9,35 +9,58 @@ and with its clients to send signed messages and update the secret used for vali
 """
 
 import lib, json
+import sys
 import threading
 import socket
-import requests
 
-SIGNKEY: lib.signing.SigningKey = None
-VERIFYKEY: lib.signing.VerifyKey = None
-SECRET: bytes = None
+SIGNKEY, VERIFYKEY = lib.eddsa_generate()
+SECRET = lib.hmac_generate()
 
 # getting configuration from files
-config: dict = json.loads(input("Config path?"))
+config: dict = json.load(open(sys.argv[1], "r"))
 GROUPS: list[dict] = config["user_groups"]
 for group in GROUPS:
     group["iek"] = lib.load_IEK_from_file(group["iek_path"])
 # -----
 
-def validate_and_relay_keys(groupconfig: dict) -> None:
+def get_ca_pubkey(group: dict):
+    ca_key = lib.get_ca_public_key(group["iek"], group["ca_ip"], group["ca_port"])
+    if ca_key is None:
+        print(f"[Sensor] Error while getting ({group['ca_ip']}) CA PubKey")
+        return
+    group["ca_pubkey"] = ca_key
+    print(f"[Sensor] ({group['ca_ip']}) CA PubKey is {str(group['ca_pubkey'])}")
+
+def validate_and_relay_keys(group: dict) -> None:
     """For a given usergroup, sends the verifykey to the group's CA,
     waits for verification and then sends to all receivers in usergroup"""
     global SIGNKEY, VERIFYKEY
-    iek = group["iek"]
-    msg = 0x0C + lib.aes_iek_cipher(iek, VERIFYKEY._key)
-    pass
+    signedmsg = lib.send_key_ca_validation(group["iek"], group["ca_pubkey"], VERIFYKEY, group["ca_ip"], group["ca_port"])
+    if signedmsg is None:
+        print("[Sensor] Failed to get CA to authorise key")
+        return
+    print("[Sensor] CA authorised key: "+str(signedmsg))
+    for receiver in group["expected_receivers"]:
+        print("[Sensor] Sending Signed PubKey to "+str(receiver))
+        sock = socket.socket()
+        try:
+            sock.connect((receiver["ip"], receiver["port"]))
+            sock.send(signedmsg)
+            sock.close()
+        except Exception as e:
+            print(e)
+
+def get_ca_pubkey_and_validate(group: dict):
+    get_ca_pubkey(group)
+    validate_and_relay_keys(group)
 
 def refresh_keypair() -> None:
     """Updates the keypair,
     then performs validate_and_relay_keys for each user group (a thread per group)"""
     global SIGNKEY, VERIFYKEY, GROUPS
     SIGNKEY, VERIFYKEY = lib.eddsa_generate() # generate keypair
-    thd_list = [threading.Thread(target=validate_and_relay_keys, args=(group,)) for group in GROUPS]
+    print("[Sensor] Updated Keypair, validating and relaying...")
+    thd_list = [threading.Thread(target=get_ca_pubkey_and_validate, args=(group,)) for group in GROUPS]
     for thd in thd_list:
         thd.run()
 
@@ -49,37 +72,5 @@ def update_secret() -> None:
         # send the secret to each receiver in group
         pass
 
-
 refresh_keypair()
-update_secret()
-
-DONE = False
-while not done:
-    print("> ", end="")
-    message = "q"
-    try:
-        message = input()
-    except EOFError:
-        print("EOF'd, quitting")
-    if message == "q":
-        done = True
-    else:
-        pass
-        # try:
-        #     pass
-        #     # message_ba = bytearray(48)
-        #     # message_ba[:min(len(message), 48)] = bytes(message, "ascii")[:min(len(message), 48)]
-        #     # message_bytes = bytes(message_ba)
-        #     # for key_serv_ip, multicast_group in dict_multicast.items():
-        #     #     if SECRETS.get(key_serv_ip, None) is not None:
-        #     #         start = time.time()
-        #     #         big_msg = lib_hmac.sign_and_assemble_message_sha1(message_bytes, SECRETS[key_serv_ip])
-        #     #         sock.sendto(big_msg, multicast_group)
-        #     #         print("-- sent to group [{}]".format(key_serv_ip)+" (temps : {})".format(time.time()-start))
-        # except KeyboardInterrupt:
-        #     print("Interrupted, quitting")
-        #     done = True
-        # except Exception as e:
-        #     print("Error: "+str(e))
-
-# -----
+input()

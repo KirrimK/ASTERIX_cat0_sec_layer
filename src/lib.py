@@ -131,16 +131,32 @@ def hmac_verify(key, message, signature) -> bool:
 
 def get_ca_public_key(iek: bytes, ca_addr: str, ca_port: int) -> signing.VerifyKey|None:
     """Contacts the CA server to get its public key"""
-    response = requests.get("http://"+ca_addr+":"+str(ca_port)+"/public")
-    print(response.status_code)
-    if response.status_code == 200:
-        resp_bytes = bytes.fromhex(response.text)
-        decr_key = fernet_iek_decipher(iek, resp_bytes)
-        print("[Lib] get_ca_public_key:decr_key is "+str(decr_key))
-        return signing.VerifyKey(decr_key)
-    return None
+    try:
+        response = requests.get("http://"+ca_addr+":"+str(ca_port)+"/public")
+        if response.status_code == 200:
+            resp_bytes = bytes.fromhex(response.text)
+            decr_key = fernet_iek_decipher(iek, resp_bytes)
+            return signing.VerifyKey(decr_key)
+        return None
+    except Exception as e:
+        print(e)
+        return None
 
-def send_key_ca_validation(iek: bytes, verifykey: signing.SigningKey, ca_addr: str, ca_port: int) -> bytes:
+def send_key_ca_validation(iek: bytes, group_verifykey: signing.VerifyKey, verifykey: signing.VerifyKey, ca_addr: str, ca_port: int) -> bytes|None:
     """Sends the sensor's public key for validation from the CA
-    Returns the key and its signature made by CA keypair"""
-    pass
+    Returns the key and its signature made by CA keypair
+    Returns None if the process has failed"""
+    try:
+        response = requests.get("http://"+ca_addr+":"+str(ca_port)+"/sign?key="+fernet_iek_cipher(iek, verifykey._key).hex())
+        if response.status_code == 200:
+            resp_bytes = bytes.fromhex(response.text)
+            decr_signedmsg = fernet_iek_decipher(iek, resp_bytes)
+            msg = decr_signedmsg[:-64]
+            signature = decr_signedmsg[-64:]
+            ver = eddsa_verify(group_verifykey, signature, msg)
+            if ver:
+                return resp_bytes
+        return None
+    except Exception as e:
+        print(e)
+        return None

@@ -14,15 +14,16 @@ def serve_public_key():
 
 @app.route("/sign", methods=["GET"])
 def sign_key():
+    global IEK
     encr_key_hex = request.args.get("key", None)
     encr_key = bytes.fromhex(encr_key_hex)
-    decr_key = lib.aes_iek_decipher(IEK, encr_key)
+    decr_key = lib.fernet_iek_decipher(IEK, encr_key)
     if decr_key is None:
         return "", 400
     KNOWN_KEYS[request.remote_addr] = decr_key
-    print("[CA] Updated key of "+request.remote_addr+" to: "+encr_key_hex)
+    print("[CA] Updated key of "+request.remote_addr+" to: "+str(decr_key))
     signature = lib.eddsa_sign(SIGNINGKEY, decr_key)
-    return (decr_key + signature).hex()
+    return (lib.fernet_iek_cipher(IEK, decr_key + signature)).hex()
 
 if __name__ == "__main__":
     CONFIG: dict = json.load(open(sys.argv[1], "r"))
@@ -33,4 +34,4 @@ if __name__ == "__main__":
     SIGNINGKEY, VERIFYKEY = lib.eddsa_generate()
     print("[CA] Keypair generated (PubKey: "+str(VERIFYKEY._key)+")", len(VERIFYKEY._key))
     PAYLOAD = lib.fernet_iek_cipher(IEK+IEK, VERIFYKEY._key)
-    app.run(host=CONFIG["bound_ip"], port=CONFIG["bound_port"], debug=False)
+    app.run(host=CONFIG["bound_ip"], port=CONFIG["bound_port"], debug=True)
