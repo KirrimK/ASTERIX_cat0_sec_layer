@@ -103,6 +103,12 @@ while not DONE:
     if message == "q":
         DONE = True
         break
+    if message == "#secret":
+        update_secret()
+        continue
+    if message == "#key":
+        refresh_keypair()
+        continue
     message_ba = bytearray(48)
     message_ba[:min(len(message), 48)] = bytes(message, "ascii")[:min(len(message), 48)]
     message_bytes = bytes(message_ba)
