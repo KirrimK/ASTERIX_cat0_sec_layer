@@ -34,4 +34,4 @@ if __name__ == "__main__":
     SIGNINGKEY, VERIFYKEY = lib.eddsa_generate()
     print("[CA] Keypair generated (PubKey: "+str(VERIFYKEY._key)+")", len(VERIFYKEY._key))
     PAYLOAD = lib.fernet_iek_cipher(IEK+IEK, VERIFYKEY._key)
-    app.run(host=CONFIG["bound_ip"], port=CONFIG["bound_port"], debug=True)
+    app.run(host=CONFIG["bound_ip"], port=CONFIG["bound_port"], debug=False)
