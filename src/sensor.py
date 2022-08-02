@@ -14,13 +14,13 @@ import threading
 import socket
 
 SIGNKEY, VERIFYKEY = lib.eddsa_generate()
-SECRET = lib.hmac_generate()
 
 # getting configuration from files
 config: dict = json.load(open(sys.argv[1], "r"))
 GROUPS: list[dict] = config["user_groups"]
 for group in GROUPS:
     group["iek"] = lib.load_IEK_from_file(group["iek_path"])
+    group["secret"] = lib.hmac_generate()
 # -----
 
 def get_ca_pubkey(group: dict):
@@ -68,13 +68,13 @@ def refresh_keypair() -> None:
 
 def update_secret() -> None:
     """Updates the secret of the sensor and sends that update to its receivers across different user_groups"""
-    global SIGNKEY, GROUPS, SECRET
-    SECRET = lib.hmac_generate()
-    print("[Sensor] Updated Secret: "+str(SECRET))
-    payload = lib.eddsa_sign(SIGNKEY, SECRET)
+    global SIGNKEY, GROUPS
+    print("[Sensor] Updating secrets")
     for group in GROUPS:
+        group["secret"] = lib.hmac_generate()
+        payload = lib.eddsa_sign(SIGNKEY, group["secret"])
         # send the secret to each receiver in group
-        ciph_payload = lib.fernet_iek_cipher(group["iek"], SECRET + payload)
+        ciph_payload = lib.fernet_iek_cipher(group["iek"], group["secret"] + payload)
         for receiver in group["expected_receivers"]:
             print("[Sensor] Sending Secret to "+str(receiver))
             sock = socket.socket()
@@ -113,5 +113,5 @@ while not DONE:
     message_ba[:min(len(message), 48)] = bytes(message, "ascii")[:min(len(message), 48)]
     message_bytes = bytes(message_ba)
     for group in GROUPS:
-        sign = lib.hmac_sign(SECRET, message_bytes)
+        sign = lib.hmac_sign(group["secret"], message_bytes)
         sockmt.sendto(message_bytes + sign, (group["asterix_multicast_ip"], group["asterix_multicast_port"]))
