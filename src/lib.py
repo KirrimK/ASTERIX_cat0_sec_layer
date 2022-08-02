@@ -110,7 +110,7 @@ def hmac_generate() -> bytes:
 def hmac_sign(key: bytes, content: bytes) -> bytes:
     """
     Signs the SHA-1 hash of the content using the provided key.
-    Returns the plaintext and its signature attached.
+    Returns the signature.
     """
     h = hmac.HMAC(key, hashes.SHA1())
     h.update(content)

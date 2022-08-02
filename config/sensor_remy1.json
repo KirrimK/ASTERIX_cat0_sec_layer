@@ -9,7 +9,7 @@
                 {"ip": "127.0.0.1", "port": 42080}
             ],
             "asterix_multicast_ip": "224.1.1.2",
-            "asterix_multicast_port": 10001
+            "asterix_multicast_port": 10000
         }
     ]
 }

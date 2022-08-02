@@ -45,7 +45,7 @@ def validate_and_relay_keys(group: dict) -> None:
         sock = socket.socket()
         try:
             sock.connect((receiver["ip"], receiver["port"]))
-            sock.send(signedmsg)
+            sock.send(b'k' + signedmsg)
             sock.close()
         except Exception as e:
             print(e)
@@ -62,15 +62,38 @@ def refresh_keypair() -> None:
     print("[Sensor] Updated Keypair, validating and relaying...")
     thd_list = [threading.Thread(target=get_ca_pubkey_and_validate, args=(group,)) for group in GROUPS]
     for thd in thd_list:
-        thd.run()
+        thd.start()
+    for thd in thd_list:
+        thd.join()
 
 def update_secret() -> None:
     """Updates the secret of the sensor and sends that update to its receivers across different user_groups"""
     global SIGNKEY, GROUPS, SECRET
     SECRET = lib.hmac_generate()
+    print("[Sensor] Updated Secret: "+str(SECRET))
+    payload = lib.eddsa_sign(SIGNKEY, SECRET)
     for group in GROUPS:
         # send the secret to each receiver in group
-        pass
+        ciph_payload = lib.fernet_iek_cipher(group["iek"], SECRET + payload)
+        for receiver in group["expected_receivers"]:
+            print("[Sensor] Sending Secret to "+str(receiver))
+            sock = socket.socket()
+            try:
+                sock.connect((receiver["ip"], receiver["port"]))
+                sock.send(b's'+ciph_payload)
+                sock.close()
+            except Exception as e:
+                print(e)
 
 refresh_keypair()
-input()
+update_secret()
+sockmt = socket.socket(socket.AF_INET,
+                         socket.SOCK_DGRAM)
+sockmt.settimeout(0.5)
+message = input()
+message_ba = bytearray(48)
+message_ba[:min(len(message), 48)] = bytes(message, "ascii")[:min(len(message), 48)]
+message_bytes = bytes(message_ba)
+for group in GROUPS:
+    sign = lib.hmac_sign(SECRET, message_bytes)
+    sockmt.sendto(message_bytes + sign, (group["asterix_multicast_ip"], group["asterix_multicast_port"]))
