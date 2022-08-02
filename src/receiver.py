@@ -10,10 +10,24 @@ Those secrets are then used to verify the authenticity of each ASTERIX message s
 """
 
 import lib, json
-
-IEK: bytes = lib.load_IEK_from_file("config/iek")
+import sys
 
 # getting configuration from files
-config: dict = json.loads(input("Config path?"))
-
+CONFIG: dict = json.load(open(sys.argv[1], "r"))
+IEK: bytes = lib.load_IEK_from_file(CONFIG["iek_path"])
+CA_IP: str = CONFIG["ca_ip"]
+CA_PORT: int = CONFIG["ca_port"]
+BOUND_IP: str = CONFIG["bound_ip"]
+BOUND_PORT: int = CONFIG["bound_port"]
+MULTICAST_IP: str = CONFIG["multicast_ip"]
+MULTICAST_PORT: int = CONFIG["multicast_port"]
 # -----
+
+# request public key from CA
+CA_VERIFYKEY: lib.signing.VerifyKey = lib.get_ca_public_key(IEK, CA_IP, CA_PORT)
+if CA_VERIFYKEY is None:
+    print("[Receiver] Error when tried to get CA's PubKey")
+    sys.exit(1)
+print("[Receiver] Got CA's PubKey: "+str(CA_VERIFYKEY))
+
+SENSOR_KEYS: dict[str] = {}

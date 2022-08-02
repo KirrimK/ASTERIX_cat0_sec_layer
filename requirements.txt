@@ -1,3 +1,2 @@
 cryptography>=37
-pycryptodome>=3.15
 PyNaCl>=1.5

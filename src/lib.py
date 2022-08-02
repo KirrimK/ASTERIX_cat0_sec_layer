@@ -6,10 +6,10 @@ A library used by all modules
 """
 
 from nacl import signing
+from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes, hmac
 import os
-from Crypto.Cipher import AES
-import time
+import requests
 
 def load_IEK_from_file(filepath: str) -> bytes:
     """
@@ -21,30 +21,57 @@ def load_IEK_from_file(filepath: str) -> bytes:
         iek = file.read()
     return iek
 
-def aes_iek_cipher(iek: bytes, plaintext: bytes) -> bytes:
-    """
-    Encrypts the plaintext (supposedly a public key in our use cases)
-    using AES 128-bit encryption and the IEK.
-    Returns the resulting ciphertext.
-    """
-    cipher = AES.new(iek, AES.MODE_EAX)
-    ciphertext, tag = cipher.encrypt_and_digest(plaintext)
-    return cipher.nonce + tag + ciphertext
+# def aes_iek_cipher(iek: bytes, plaintext: bytes) -> bytes:
+#     """
+#     Encrypts the plaintext (supposedly a public key in our use cases)
+#     using AES 128-bit encryption and the IEK.
+#     Returns the resulting ciphertext.
+#     """
+#     cipher = AES.new(iek, AES.MODE_EAX)
+#     ciphertext, tag = cipher.encrypt_and_digest(plaintext)
+#     nonce = cipher.nonce
+#     print("---\nplaintext: "+str(plaintext))
+#     print("nonce: "+str(nonce))
+#     print("tag: "+str(tag))
+#     print("ciphertext: "+str(ciphertext))
+#     print("---")
+#     return nonce + tag + ciphertext
 
-def aes_iek_decipher(iek: bytes, nonce: bytes, tag: bytes, ciphertext: bytes) -> bytes|None:
-    """
-    Decrypts the plaintext (supposedly a public key in our use cases)
-    using AES 128-bit encryption and the IEK.
-    Returns the resulting plaintext.
-    """
-    cipher = AES.new(iek, AES.MODE_EAX, nonce=nonce)
-    plaintext = cipher.decrypt(ciphertext)
+# def aes_iek_decipher(iek: bytes, nonce_tag_ciphertext: bytes) -> bytes|None:
+#     """
+#     Decrypts the plaintext (supposedly a public key in our use cases)
+#     using AES 128-bit encryption and the IEK.
+#     Returns the resulting plaintext.
+#     """
+#     nonce = nonce_tag_ciphertext[:16]
+#     tag = nonce_tag_ciphertext[16:32]
+#     ciphertext = nonce_tag_ciphertext[32:]
+#     cipher = AES.new(iek, AES.MODE_EAX, nonce=nonce)
+#     plaintext = cipher.decrypt(ciphertext)
+#     print("---\nplaintext: "+str(plaintext))
+#     print("nonce: "+str(nonce))
+#     print("tag: "+str(tag))
+#     print("ciphertext: "+str(ciphertext))
+#     print("---")
+#     try:
+#         cipher.verify(tag)
+#         # succeeds if message is authentic
+#         return plaintext
+#     except Exception as e:
+#         # fails if message has been tampered with
+#         print(e)
+#         return None
+
+def fernet_iek_cipher(iek: bytes, plaintext: bytes) -> bytes:
+    f = Fernet(iek)
+    return f.encrypt(plaintext)
+
+def fernet_iek_decipher(iek: bytes, ciphertext: bytes) -> bytes|None:
+    f = Fernet(iek)
     try:
-        cipher.verify(tag)
-        # succeeds if message is authentic
-        return plaintext
-    except ValueError:
-        # fails if message has been tampered with
+        return f.decrypt(ciphertext)
+    except Exception as e:
+        print(e)
         return None
 
 def eddsa_generate() -> tuple[signing.SigningKey, signing.VerifyKey]:
@@ -101,3 +128,19 @@ def hmac_verify(key, message, signature) -> bool:
         return True
     except Exception:
         return False
+
+def get_ca_public_key(iek: bytes, ca_addr: str, ca_port: int) -> signing.VerifyKey|None:
+    """Contacts the CA server to get its public key"""
+    response = requests.get("http://"+ca_addr+":"+str(ca_port)+"/public")
+    print(response.status_code)
+    if response.status_code == 200:
+        resp_bytes = bytes.fromhex(response.text)
+        decr_key = fernet_iek_decipher(iek, resp_bytes)
+        print("[Lib] get_ca_public_key:decr_key is "+str(decr_key))
+        return signing.VerifyKey(decr_key)
+    return None
+
+def send_key_ca_validation(iek: bytes, verifykey: signing.SigningKey, ca_addr: str, ca_port: int) -> bytes:
+    """Sends the sensor's public key for validation from the CA
+    Returns the key and its signature made by CA keypair"""
+    pass

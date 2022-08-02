@@ -28,9 +28,9 @@ if __name__ == "__main__":
     CONFIG: dict = json.load(open(sys.argv[1], "r"))
     print("[CA] Config loaded from "+sys.argv[1])
     IEK: bytes = lib.load_IEK_from_file(CONFIG["iek_path"])
-    print("[CA] IEK loaded")
+    print("[CA] IEK loaded", len(IEK))
     # WHITELIST = set() #implement whitelist if needed
     SIGNINGKEY, VERIFYKEY = lib.eddsa_generate()
-    print("[CA] Keypair generated")
-    PAYLOAD = lib.aes_iek_cipher(IEK, VERIFYKEY._key)
+    print("[CA] Keypair generated (PubKey: "+str(VERIFYKEY._key)+")", len(VERIFYKEY._key))
+    PAYLOAD = lib.fernet_iek_cipher(IEK+IEK, VERIFYKEY._key)
     app.run(host=CONFIG["bound_ip"], port=CONFIG["bound_port"], debug=False)
