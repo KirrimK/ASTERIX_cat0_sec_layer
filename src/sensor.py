@@ -43,6 +43,7 @@ def validate_and_relay_keys(group: dict) -> None:
     for receiver in group["expected_receivers"]:
         print("[Sensor] Sending Signed PubKey to "+str(receiver))
         sock = socket.socket()
+        sock.settimeout(1)
         try:
             sock.connect((receiver["ip"], receiver["port"]))
             sock.send(b'k' + signedmsg)
@@ -78,6 +79,7 @@ def update_secret() -> None:
         for receiver in group["expected_receivers"]:
             print("[Sensor] Sending Secret to "+str(receiver))
             sock = socket.socket()
+            sock.settimeout(1)
             try:
                 sock.connect((receiver["ip"], receiver["port"]))
                 sock.send(b's'+ciph_payload)
@@ -96,7 +98,7 @@ DONE = False
 while not DONE:
     message = ""
     try:
-        message = input()
+        message = input("> ")
     except KeyboardInterrupt:
         DONE = True
         break
@@ -112,6 +114,8 @@ while not DONE:
     message_ba = bytearray(48)
     message_ba[:min(len(message), 48)] = bytes(message, "ascii")[:min(len(message), 48)]
     message_bytes = bytes(message_ba)
+    print("[Sensor] Sending message: "+str(message_bytes))
     for group in GROUPS:
+        print(group["ca_ip"])
         sign = lib.hmac_sign(group["secret"], message_bytes)
         sockmt.sendto(message_bytes + sign, (group["asterix_multicast_ip"], group["asterix_multicast_port"]))

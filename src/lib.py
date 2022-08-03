@@ -97,7 +97,7 @@ def hmac_verify(key, message, signature) -> bool:
 def get_ca_public_key(iek: bytes, ca_addr: str, ca_port: int) -> signing.VerifyKey|None:
     """Contacts the CA server to get its public key"""
     try:
-        response = requests.get("http://"+ca_addr+":"+str(ca_port)+"/public")
+        response = requests.get("http://"+ca_addr+":"+str(ca_port)+"/public", timeout=1)
         if response.status_code == 200:
             resp_bytes = bytes.fromhex(response.text)
             decr_key = fernet_iek_decipher(iek, resp_bytes)
@@ -112,7 +112,7 @@ def send_key_ca_validation(iek: bytes, group_verifykey: signing.VerifyKey, verif
     Returns the key and its signature made by CA keypair
     Returns None if the process has failed"""
     try:
-        response = requests.get("http://"+ca_addr+":"+str(ca_port)+"/sign?key="+fernet_iek_cipher(iek, verifykey._key).hex())
+        response = requests.get("http://"+ca_addr+":"+str(ca_port)+"/sign?key="+fernet_iek_cipher(iek, verifykey._key).hex(), timeout=1)
         if response.status_code == 200:
             resp_bytes = bytes.fromhex(response.text)
             decr_signedmsg = fernet_iek_decipher(iek, resp_bytes)
