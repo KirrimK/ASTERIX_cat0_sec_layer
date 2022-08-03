@@ -21,48 +21,13 @@ def load_IEK_from_file(filepath: str) -> bytes:
         iek = file.read()
     return iek
 
-# def aes_iek_cipher(iek: bytes, plaintext: bytes) -> bytes:
-#     """
-#     Encrypts the plaintext (supposedly a public key in our use cases)
-#     using AES 128-bit encryption and the IEK.
-#     Returns the resulting ciphertext.
-#     """
-#     cipher = AES.new(iek, AES.MODE_EAX)
-#     ciphertext, tag = cipher.encrypt_and_digest(plaintext)
-#     nonce = cipher.nonce
-#     print("---\nplaintext: "+str(plaintext))
-#     print("nonce: "+str(nonce))
-#     print("tag: "+str(tag))
-#     print("ciphertext: "+str(ciphertext))
-#     print("---")
-#     return nonce + tag + ciphertext
-
-# def aes_iek_decipher(iek: bytes, nonce_tag_ciphertext: bytes) -> bytes|None:
-#     """
-#     Decrypts the plaintext (supposedly a public key in our use cases)
-#     using AES 128-bit encryption and the IEK.
-#     Returns the resulting plaintext.
-#     """
-#     nonce = nonce_tag_ciphertext[:16]
-#     tag = nonce_tag_ciphertext[16:32]
-#     ciphertext = nonce_tag_ciphertext[32:]
-#     cipher = AES.new(iek, AES.MODE_EAX, nonce=nonce)
-#     plaintext = cipher.decrypt(ciphertext)
-#     print("---\nplaintext: "+str(plaintext))
-#     print("nonce: "+str(nonce))
-#     print("tag: "+str(tag))
-#     print("ciphertext: "+str(ciphertext))
-#     print("---")
-#     try:
-#         cipher.verify(tag)
-#         # succeeds if message is authentic
-#         return plaintext
-#     except Exception as e:
-#         # fails if message has been tampered with
-#         print(e)
-#         return None
+def fernet_generate_iek(filepath: str) -> None:
+    """Generates a random Initiation Encryption Key and saves it to a file"""
+    with open(filepath, 'wb') as file:
+        file.write(Fernet.generate_key())
 
 def fernet_iek_cipher(iek: bytes, plaintext: bytes) -> bytes:
+    """"""
     f = Fernet(iek)
     return f.encrypt(plaintext)
 
@@ -160,3 +125,6 @@ def send_key_ca_validation(iek: bytes, group_verifykey: signing.VerifyKey, verif
     except Exception as e:
         print(e)
         return None
+
+if __name__ == "__main__":
+    fernet_generate_iek(input("Enter the filepath to save the new IEK: "))
