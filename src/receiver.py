@@ -24,9 +24,8 @@ BOUND_IP: str = CONFIG["bound_ip"]
 BOUND_PORT: int = CONFIG["bound_port"]
 MULTICAST_IP: str = CONFIG["multicast_ip"]
 MULTICAST_PORT: int = CONFIG["multicast_port"]
+SELF_EXT_IP: str = CONFIG["self_ext_ip"]
 # -----
-
-IPADDR = socket.gethostbyname(socket.gethostname()) 
 
 # request public key from CA
 CA_VERIFYKEY: lib.signing.VerifyKey = lib.get_ca_public_key(IEK, CA_IP, CA_PORT)
@@ -83,9 +82,10 @@ while True:
     data, (addr, _) = sockmt.recvfrom(1024)
     msg = data[:48]
     sign = data[48:]
-    sec = SENSOR_SECRETS.get(addr, None)
-    if sec is None and addr == IPADDR: # a hack for sending message on the same computer
+    if SELF_EXT_IP == addr:
         sec = SENSOR_SECRETS.get("127.0.0.1", None)
+    else:
+        sec = SENSOR_SECRETS.get(addr, None)
     if sec is None:
         print(f"Message from {addr}: "+str(msg)+" (unverified, no key)")
     else:
