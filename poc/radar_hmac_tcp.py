@@ -25,19 +25,25 @@ cj: list = json.load(open(cfp, "r"))
 
 print("ip et port socket_key: {} {}".format(cj[0]["bound_ip"],cj[0]["bound_port"]))
 
-SOCKET_KEY= socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-SOCKET_KEY.bind((cj[0]["bound_ip"], cj[0]["bound_port"]))
-SOCKET_KEY.listen(10)
 
 
 
-def update_key_thread(key_serv_ip: str, key_serv_pub_key: bytes, sock: socket.socket, list_recs: list):
+
+
+def update_key_thread(key_serv_ip: str, key_serv_pub_key: bytes, sock: socket.socket,socket_key : socket.socket, list_recs: list):
+    
+    
+
+    
+
     global SECRETS
     global END_THREAD
     print("Starting update key thread")
     while not END_THREAD:
+        socket_dispatch=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            conn,addr=SOCKET_KEY.accept()
+            conn,addr=socket_key.accept()
+            
             data= conn.recv(1024)
             if not data:
                 break
@@ -50,16 +56,16 @@ def update_key_thread(key_serv_ip: str, key_serv_pub_key: bytes, sock: socket.so
             print("[UPDATED KEY, REDISPATCHING]")
             for (ip, port, pub_key) in list_recs:
                 print("ip et port pour socket_dispatch : {} {}".format(ip,port))
-                socket_dispatch=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                
                 try:
                     socket_dispatch.connect((str(ip),int(port)))
-
                     agent_box = public.Box(private_key, public.PublicKey(pub_key))
                     box_to_send=agent_box.encrypt(SECRETS[key_serv_ip])
                     socket_dispatch.sendall(box_to_send)
                     data=socket_dispatch.recv(1024)
                     socket_dispatch.close()
-                except:
+                except Exception as e:
+                    print(e)
                     pass
                 print(repr(data))
         except TimeoutError:
@@ -70,18 +76,27 @@ def update_key_thread(key_serv_ip: str, key_serv_pub_key: bytes, sock: socket.so
 
 for elt in cj:
     print("[Radar] Adding user group from config")
+
+    SOCKET_KEY= socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    SOCKET_KEY.bind((elt["bound_ip"], elt["bound_port"]))
+    SOCKET_KEY.listen(10)
+
+
     sock = socket.socket(socket.AF_INET,
                          socket.SOCK_DGRAM)
     sock.settimeout(0.5)
-    sock.bind((elt["bound_ip"], elt["bound_port"]))
+    #sock.bind((elt["bound_ip"], elt["bound_port"]))
     print("\\ Binding to {}:{}".format(elt["bound_ip"], elt["bound_port"]))
     dict_multicast[elt["key_server"]["ip"]] = ((elt["recipients"]["multicast_ip"], elt["recipients"]["multicast_port"]))
     print("\\ Adding multicast group {} <-> ({}:{})".format(elt["key_server"]["ip"], elt["recipients"]["multicast_ip"], elt["recipients"]["multicast_port"]))
+
+    
+
     loc_list = [].copy()
     for rec in elt["recipients"]["list_pubkeys"]:
         loc_list.append((rec["ip"], rec["port"], bytes(bytearray.fromhex(rec["pubkey"]))))
         print("  \\ Client ({}:{}) pubkey: {}".format(rec["ip"], rec["port"], rec["pubkey"]))
-    thd_loc = threading.Thread(target=update_key_thread, args=(elt["key_server"]["ip"], bytes(bytearray.fromhex(rec["pubkey"])),sock,loc_list))
+    thd_loc = threading.Thread(target=update_key_thread, args=(elt["key_server"]["ip"], bytes(bytearray.fromhex(rec["pubkey"])),sock,SOCKET_KEY, loc_list))
     thd_loc.start()
     list_thds.append(thd_loc)
 

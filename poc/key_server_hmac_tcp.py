@@ -22,31 +22,36 @@ for elt in cj["list_radars"]:
     print("list of radar : {}".format(list_of_radars))
 
 UPDATE_INTERVAL = 15
-
 last_update = 0
+
+
+
+
 random.seed(time.time())
 while True:
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     time.sleep(0.5)
     if time.time() - last_update > UPDATE_INTERVAL:
         last_update = time.time()
         secret = random.randbytes(20)
         print(f"[{last_update}] UPDATING KEY")
         for agent, pub_key in list_of_radars.items():
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            
             try:
                 print("trying to connect to agent {}".format(agent))
                 sock.connect(agent)
-            except:
-                pass
+                sock.settimeout(None)
+           
             # cipher the key or whatever and send to the agent, along with own public key
-            agent_box = public.Box(private_key, public.PublicKey(pub_key))
-            try:
+                agent_box = public.Box(private_key, public.PublicKey(pub_key))
+           
                 sock.sendall(agent_box.encrypt(secret))
                 print("sent to {}".format(agent))
                 data=sock.recv(1024)
                 print(repr(data))
                 sock.close()
-            except:
+            except Exception as e :
+                print(e)
                 pass
             
 
