@@ -1,0 +1,5 @@
+{
+    "iek_path": "config/iek1",
+    "bound_ip": "127.0.0.1",
+    "bound_port": 42000
+}
