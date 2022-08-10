@@ -21,6 +21,8 @@ BOUND_PORT: int = CONFIG["bound_port"]
 MULTICAST_IP: str = CONFIG["multicast_ip"]
 MULTICAST_PORT: int = CONFIG["multicast_port"]
 SELF_EXT_IP: str = CONFIG["self_ext_ip"]
+CA_IP: str = CONFIG["ca_ip"]
+CA_PORT: int = CONFIG["ca_port"]
 # -----
 
 PRIVATEKEY, PUBLICKEY = lib.eddsa_generate()
