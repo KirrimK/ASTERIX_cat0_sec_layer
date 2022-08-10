@@ -2,8 +2,6 @@
     "user_groups": [
         {
             "iek_path": "config/iek1",
-            "ca_ip": "127.0.0.1",
-            "ca_port": 42000,
 
             "expected_receivers": [
                 {"ip": "127.0.0.1", "port": 42080}
