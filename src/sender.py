@@ -7,10 +7,13 @@ packets emitted by a sensor (such as a radar).
 It communicates with its clients to send signed messages and update the secret used for validation
 """
 
+import threading
 import lib, json
 import sys
 import socket
+import time
 
+INTERVAL = 15
 PRIVATEKEY, PUBLICKEY = lib.eddsa_generate()
 
 # getting configuration from files
@@ -71,14 +74,25 @@ def update_secret() -> None:
                 except Exception as e:
                     print(e)
 
+DONE = False
+
+def auto_secret():
+    global INTERVAL, DONE
+    last = 0
+    while not DONE:
+        if (time.time() - last) >= INTERVAL:
+            last = time.time()
+            update_secret()
+
 refresh_keypair()
-update_secret()
+
+thd_autosec = threading.Thread(target=auto_secret)
+thd_autosec.start()
 
 sockmt = socket.socket(socket.AF_INET,
                          socket.SOCK_DGRAM)
 sockmt.settimeout(0.5)
 
-DONE = False
 while not DONE:
     message = ""
     try:
