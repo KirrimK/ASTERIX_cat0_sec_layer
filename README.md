@@ -11,3 +11,6 @@
 - HMAC SECRET: sign w/own signingkey and send encrypted w/ recv's pubKey / one per sensor per UG
 - IEK only for KeySharing
 - (?Marketing: sell secure key exchange?)
+
+- add rule to drop or relay messages of improper size
+- document code and config files

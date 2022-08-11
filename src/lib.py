@@ -10,6 +10,7 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes, hmac
 import os
 import requests
+import logging
 
 def load_IEK_from_file(filepath: str) -> bytes:
     """
@@ -36,7 +37,7 @@ def fernet_iek_decipher(iek: bytes, ciphertext: bytes) -> bytes|None:
     try:
         return f.decrypt(ciphertext)
     except Exception as e:
-        print(e)
+        logging.error(e)
         return None
 
 def eddsa_generate() -> tuple[signing.SigningKey, signing.VerifyKey]:
@@ -62,7 +63,8 @@ def eddsa_verify(verifykey: signing.VerifyKey, signature: bytes, plaintext: byte
     try:
         verifykey.verify(plaintext, signature)
         return True
-    except Exception:
+    except Exception as e:
+        logging.error(e)
         return False
 
 def eddsa_encr(verifykey: signing.VerifyKey, content: bytes) -> bytes:
@@ -75,7 +77,8 @@ def eddsa_decr(signkey: signing.SigningKey, ciphertext: bytes) -> bytes|None:
     box = public.SealedBox(privkey)
     try:
         return box.decrypt(ciphertext)
-    except:
+    except Exception as e:
+        logging.error(e)
         return None
 
 def hmac_generate() -> bytes:
@@ -104,7 +107,8 @@ def hmac_verify(key, message, signature) -> bool:
     try:
         h.verify(signature)
         return True
-    except Exception:
+    except Exception as e:
+        logging.error(e)
         return False
 
 def get_ca_public_key(iek: bytes, ca_addr: str, ca_port: int) -> signing.VerifyKey|None:
@@ -117,7 +121,7 @@ def get_ca_public_key(iek: bytes, ca_addr: str, ca_port: int) -> signing.VerifyK
             return signing.VerifyKey(decr_key)
         return None
     except Exception as e:
-        print(e)
+        logging.error(e)
         return None
 
 def send_key_ca_validation(iek: bytes, group_verifykey: signing.VerifyKey, verifykey: signing.VerifyKey, ca_addr: str, ca_port: int) -> bytes|None:
@@ -136,7 +140,7 @@ def send_key_ca_validation(iek: bytes, group_verifykey: signing.VerifyKey, verif
                 return resp_bytes
         return None
     except Exception as e:
-        print(e)
+        logging.error(e)
         return None
 
 if __name__ == "__main__":

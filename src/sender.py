@@ -10,18 +10,38 @@ It communicates with its clients to send signed messages and update the secret u
 import threading
 import lib, json
 import sys
-import socket
+import socket, struct
 import time
+import logging
+
+logging.basicConfig(stream=sys.stdout, format="[%(asctime)s][%(levelname)s] - %(message)s", level=logging.INFO)
 
 INTERVAL = 15
 PRIVATEKEY, PUBLICKEY = lib.eddsa_generate()
 
 # getting configuration from files
 config: dict = json.load(open(sys.argv[1], "r"))
+logging.info(f"Loaded configuration from \"{sys.argv[1]}\"")
+
+GATEWAY = config["mode"]=="gateway"
+logging.info("Gateway mode engaged" if GATEWAY else "Gateway mode disengaged")
+
+if GATEWAY:
+    LEGACY_IP = config["legacy_input_mcast_ip"]
+    LEGACY_PORT = int(config["legacy_input_mcast_port"])
+    logging.info(f"Gateway legacy traffic will be taken from multicast {LEGACY_IP}:{str(LEGACY_PORT)}")
+
 GROUPS: list[dict] = config["user_groups"]
 for group in GROUPS:
+    logging.info("Start of group information")
     group["iek"] = lib.load_IEK_from_file(group["iek_path"])
+    logging.info("Group IEK located at "+group["iek_path"])
     group["secret"] = lib.hmac_generate()
+    logging.info("Group CA can be contacted at "+group["ca_ip"]+":"+str(group["ca_port"]))
+    for user in group["expected_receivers"]:
+        logging.info("Expecting receiver at "+user["ip"]+":"+str(user["port"]))
+    logging.info("Group secure traffic will be sent to multicast "+group["asterix_multicast_ip"]+":"+str(group["asterix_multicast_port"]))
+    logging.info("End of group information")
 # -----
 
 def refresh_keypair() -> None:
@@ -92,25 +112,37 @@ sockmt = socket.socket(socket.AF_INET,
                          socket.SOCK_DGRAM)
 sockmt.settimeout(0.5)
 
-while not DONE:
-    message = ""
-    try:
-        message = input("> ")
-    except KeyboardInterrupt:
-        DONE = True
-        break
-    if message == "q":
-        DONE = True
-        break
-    if message == "#secret":
-        update_secret()
-        continue
-    if message == "#key":
-        refresh_keypair()
-        continue
-    message_ba = bytearray(48)
-    message_ba[:min(len(message), 48)] = bytes(message, "ascii")[:min(len(message), 48)]
-    message_bytes = bytes(message_ba)
-    for group in GROUPS:
-        sign = lib.hmac_sign(group["secret"], message_bytes)
-        sockmt.sendto(message_bytes + sign, (group["asterix_multicast_ip"], group["asterix_multicast_port"]))
+if GATEWAY:
+    sockmtgate = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sockmtgate.bind(('', LEGACY_PORT))
+    groupmtgate = socket.inet_aton(LEGACY_IP)
+    mreqgate=struct.pack('4sL',groupmtgate,socket.INADDR_ANY)
+    sockmtgate.setsockopt(socket.IPPROTO_IP,socket.IP_ADD_MEMBERSHIP,mreqgate)
+    while True:
+        data, (addr, _) = sockmtgate.recvfrom(1024)
+        for group in GROUPS:
+            sign = lib.hmac_sign(group["secret"], data)
+            sockmt.sendto(data + sign, (group["asterix_multicast_ip"], group["asterix_multicast_port"]))
+else:
+    while not DONE:
+        message = ""
+        try:
+            message = input("> ")
+        except KeyboardInterrupt:
+            DONE = True
+            break
+        if message == "q":
+            DONE = True
+            break
+        if message == "#secret":
+            update_secret()
+            continue
+        if message == "#key":
+            refresh_keypair()
+            continue
+        message_ba = bytearray(48)
+        message_ba[:min(len(message), 48)] = bytes(message, "ascii")[:min(len(message), 48)]
+        message_bytes = bytes(message_ba)
+        for group in GROUPS:
+            sign = lib.hmac_sign(group["secret"], message_bytes)
+            sockmt.sendto(message_bytes + sign, (group["asterix_multicast_ip"], group["asterix_multicast_port"]))

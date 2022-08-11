@@ -6,5 +6,13 @@
     "multicast_port": 10000,
     "bound_ip": "127.0.0.1",
     "bound_port": 42080,
-    "self_ext_ip": "192.168.43.208"
+    "self_ext_ip": "172.26.232.118",
+    "legacy_output_mcast_ip": "224.1.1.4",
+    "legacy_output_mcast_port": 9998,
+    "mode": "gateway",
+    "actions": {
+        "sign_ok": "relay",
+        "sign_no": "drop",
+        "no_sec": "drop"
+    }
 }

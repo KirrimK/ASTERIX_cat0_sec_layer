@@ -1,4 +1,7 @@
 {
+    "legacy_input_mcast_ip": "224.1.1.1",
+    "legacy_input_mcast_port": 9999,
+    "mode": "gateway",
     "user_groups": [
         {
             "iek_path": "config/iek1",
