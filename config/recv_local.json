@@ -6,5 +6,5 @@
     "multicast_port": 10000,
     "bound_ip": "127.0.0.1",
     "bound_port": 42080,
-    "self_ext_ip": "172.26.232.84"
+    "self_ext_ip": "172.26.232.118"
 }

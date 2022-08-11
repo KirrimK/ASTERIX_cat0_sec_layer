@@ -4,12 +4,10 @@ Receiver Gateway
 
 The Receiver Gateway processes all inbound ASTERIX traffic to verify if the messages have been signed by
 a legitimate sensor.
-It receives a CA public key from the CA used to validate Sensor public keys,
-and receives Sensor public keys used to verify the authenticity of secrets sent regularly by Sensors.
+It receives Sensor public keys used to verify the authenticity of secrets sent regularly by Sensors.
 Those secrets are then used to verify the authenticity of each ASTERIX message sent by a sensor.
 """
 
-from click import secho
 import lib, json
 import sys
 import socket, struct
@@ -18,27 +16,21 @@ import threading
 # getting configuration from files
 CONFIG: dict = json.load(open(sys.argv[1], "r"))
 IEK: bytes = lib.load_IEK_from_file(CONFIG["iek_path"])
-CA_IP: str = CONFIG["ca_ip"]
-CA_PORT: int = CONFIG["ca_port"]
 BOUND_IP: str = CONFIG["bound_ip"]
 BOUND_PORT: int = CONFIG["bound_port"]
 MULTICAST_IP: str = CONFIG["multicast_ip"]
 MULTICAST_PORT: int = CONFIG["multicast_port"]
 SELF_EXT_IP: str = CONFIG["self_ext_ip"]
+CA_IP: str = CONFIG["ca_ip"]
+CA_PORT: int = CONFIG["ca_port"]
 # -----
 
-# request public key from CA
-CA_VERIFYKEY: lib.signing.VerifyKey = lib.get_ca_public_key(IEK, CA_IP, CA_PORT)
-if CA_VERIFYKEY is None:
-    print("[Receiver] Error when tried to get CA's PubKey")
-else:
-    print("[Receiver] Got CA's PubKey: "+str(CA_VERIFYKEY))
-
-SENSOR_KEYS: dict[str] = {}
-SENSOR_SECRETS: dict[str] = {}
+PRIVATEKEY, PUBLICKEY = lib.eddsa_generate()
+SENSOR_KEYS: dict[str, bytes] = {}
+SENSOR_SECRETS: dict[str, bytes] = {}
 
 def listen_sensor_keys_secrets():
-    global SENSOR_KEYS, SENSOR_SECRETS, CA_VERIFYKEY
+    global IEK, PRIVATEKEY, PUBLICKEY, SENSOR_KEYS, SENSOR_SECRETS
     sock = socket.socket()
     try:
         sock.bind((BOUND_IP, BOUND_PORT))
@@ -46,26 +38,31 @@ def listen_sensor_keys_secrets():
         while True:
             client, (address, port) = sock.accept()
             data = client.recv(2048)
-            client.close()
-            decr_signedmsg = lib.fernet_iek_decipher(IEK, data[1:])
-            if decr_signedmsg is None:
-                print("[Receiver] Error while deciphering the received message")
-                continue
-            msg = decr_signedmsg[:-64]
-            signature = decr_signedmsg[-64:]
             if data[0] == 107:#b'k':
-                if lib.eddsa_verify(CA_VERIFYKEY, signature, msg):
-                    SENSOR_KEYS[address] = lib.signing.VerifyKey(msg)
-                    print(f"[Receiver] Sensor ({address}) updated its PubKey")
+                decr_key = lib.fernet_iek_decipher(IEK, data[1:])
+                if decr_key is None:
+                    print(f"[Receiver] {address} tried to update its PubKey but an error occured")
                 else:
-                    SENSOR_KEYS[address] = None
-                    print(f"[Receiver] Sensor ({address}) tried to update its key, but could not be trusted")
-            if data[0] == 115:#b's':
-                if lib.eddsa_verify(SENSOR_KEYS[address], signature, msg):
-                    print(f"[Receiver] Sensor ({address}) updated its secret: {msg}")
-                    SENSOR_SECRETS[address] = msg
+                    SENSOR_KEYS[address] = lib.signing.VerifyKey(decr_key)
+                    print(f"[Receiver] {address} updated its PubKey")
+                    ciph_data = lib.fernet_iek_cipher(IEK, PUBLICKEY._key)
+                    if ciph_data is None:
+                        print("Error while ciphering public key to send")
+                    else:
+                        client.send(ciph_data)
+            elif data[0] == 115:#b's':
+                signed_key = lib.eddsa_decr(PRIVATEKEY, data[1:])
+                if signed_key is None:
+                    print(f"[Receiver] {address} tried to update its HMAC key but decrypting with own private key failed")
                 else:
-                    print(f"[Receiver] Sensor ({address}) failed to update its secret")
+                    hmac_key = signed_key[:-64]
+                    signature = signed_key[-64:]
+                    print(hmac_key, signature)
+                    if lib.eddsa_verify(SENSOR_KEYS[address], signature, hmac_key):
+                        SENSOR_SECRETS[address] = hmac_key
+                    else:
+                        print(f"[Receiver] {address} tried to update its HMAC key but verifying the signature failed")
+            client.close()
     except Exception as e:
         print(e)
     sock.close()
