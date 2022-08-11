@@ -47,7 +47,7 @@ def listen_sensor_keys_secrets():
                     print(f"[Receiver] {address} updated its PubKey")
                     ciph_data = lib.fernet_iek_cipher(IEK, PUBLICKEY._key)
                     if ciph_data is None:
-                        print("Error while ciphering public key to send")
+                        print("[Receiver] Error while ciphering public key to send")
                     else:
                         client.send(ciph_data)
             elif data[0] == 115:#b's':
@@ -57,9 +57,9 @@ def listen_sensor_keys_secrets():
                 else:
                     hmac_key = signed_key[:-64]
                     signature = signed_key[-64:]
-                    print(hmac_key, signature)
                     if lib.eddsa_verify(SENSOR_KEYS[address], signature, hmac_key):
                         SENSOR_SECRETS[address] = hmac_key
+                        print(f"[Receiver] {address} updated its HMAC key")
                     else:
                         print(f"[Receiver] {address} tried to update its HMAC key but verifying the signature failed")
             client.close()

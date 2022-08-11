@@ -29,10 +29,10 @@ def refresh_keypair() -> None:
     PRIVATEKEY, PUBLICKEY = lib.eddsa_generate() # generate keypair
     for group in GROUPS:
         payload = lib.fernet_iek_cipher(group["iek"], PUBLICKEY._key)
-        group_sock = socket.socket()
-        group_sock.settimeout(1)
         for receiver in group["expected_receivers"]:
             try:
+                group_sock = socket.socket()
+                group_sock.settimeout(1)
                 group_sock.connect((receiver["ip"], receiver["port"]))
                 group_sock.send(b'k'+payload)
                 ciph_data = group_sock.recv(2048)
@@ -45,6 +45,7 @@ def refresh_keypair() -> None:
                 group_sock.close()
             except Exception as e:
                 print(e, f"error while sending key to receiver {receiver}")
+        
 
 def update_secret() -> None:
     """Updates the secret of the sensor and sends that update to its receivers across different user_groups"""
@@ -52,7 +53,6 @@ def update_secret() -> None:
     print("[Sensor] Updating secrets")
     for group in GROUPS:
         group["secret"] = lib.hmac_generate()
-        print(group["secret"])
         payload = group["secret"] + lib.eddsa_sign(PRIVATEKEY, group["secret"])
         # send the secret to each receiver in group
         for receiver in group["expected_receivers"]:
