@@ -14,3 +14,4 @@
 
 - add rule to drop or relay messages of improper size
 - document code and config files
+- finish converting all debug prints to logging
