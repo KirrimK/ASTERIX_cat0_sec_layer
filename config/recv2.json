@@ -1,0 +1,10 @@
+{
+    "iek_path": "config/iek2",
+    "ca_ip": "127.0.0.1",
+    "ca_port": 42001,
+    "multicast_ip": "224.1.1.3",
+    "multicast_port": 10001,
+    "bound_ip": "127.0.0.1",
+    "bound_port": 42081,
+    "self_ext_ip": "192.168.43.208"
+}
