@@ -64,7 +64,6 @@ def update_secret() -> None:
                 print(f"Did not have {receiver}'s pubkey")
             else:
                 encr_payload = lib.eddsa_encr(rpub, payload)
-                print("[Sensor] Sending Secret to "+str(receiver))
                 sock = socket.socket()
                 sock.settimeout(1)
                 try:
