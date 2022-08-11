@@ -5,7 +5,7 @@ Library
 A library used by all modules
 """
 
-from nacl import signing
+from nacl import signing, public
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes, hmac
 import os
@@ -64,6 +64,19 @@ def eddsa_verify(verifykey: signing.VerifyKey, signature: bytes, plaintext: byte
         return True
     except Exception:
         return False
+
+def eddsa_encr(verifykey: signing.VerifyKey, content: bytes) -> bytes:
+    publkey = verifykey.to_curve25519_public_key()
+    box = public.SealedBox(publkey)
+    return box.encrypt(content)
+
+def eddsa_decr(signkey: signing.SigningKey, ciphertext: bytes) -> bytes|None:
+    privkey = signkey.to_curve25519_private_key()
+    box = public.SealedBox(privkey)
+    try:
+        return box.decrypt(ciphertext)
+    except:
+        return None
 
 def hmac_generate() -> bytes:
     """

@@ -56,16 +56,20 @@ def update_secret() -> None:
         payload = group["secret"] + lib.eddsa_sign(PRIVATEKEY, group["secret"])
         # send the secret to each receiver in group
         for receiver in group["expected_receivers"]:
-            encr_payload = lib.eddsa_encr(receiver["public"], payload)
-            print("[Sensor] Sending Secret to "+str(receiver))
-            sock = socket.socket()
-            sock.settimeout(1)
-            try:
-                sock.connect((receiver["ip"], receiver["port"]))
-                sock.send(b's'+encr_payload)
-                sock.close()
-            except Exception as e:
-                print(e)
+            rpub = receiver.get("public", None)
+            if rpub is None:
+                print(f"Did not have {receiver}'s pubkey")
+            else:
+                encr_payload = lib.eddsa_encr(rpub, payload)
+                print("[Sensor] Sending Secret to "+str(receiver))
+                sock = socket.socket()
+                sock.settimeout(1)
+                try:
+                    sock.connect((receiver["ip"], receiver["port"]))
+                    sock.send(b's'+encr_payload)
+                    sock.close()
+                except Exception as e:
+                    print(e)
 
 refresh_keypair()
 update_secret()
