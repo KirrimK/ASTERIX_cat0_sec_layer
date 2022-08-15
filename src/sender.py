@@ -19,6 +19,8 @@ logging.basicConfig(stream=sys.stdout, format="[%(asctime)s][%(levelname)s] - %(
 INTERVAL = 15
 PRIVATEKEY, PUBLICKEY = lib.eddsa_generate()
 
+logging.info("Started Sender gateway")
+
 # getting configuration from files
 config: dict = json.load(open(sys.argv[1], "r"))
 logging.info(f"Loaded configuration from \"{sys.argv[1]}\"")
@@ -44,11 +46,14 @@ for group in GROUPS:
     logging.info("End of group information")
 # -----
 
+logging.info("Configuration successfully loaded")
+
 def refresh_keypair() -> None:
     """Updates the keypair,
     then sends the public key to all members of all groups using each group's IEK.
     get the key of each receiver in return"""
     global PRIVATEKEY, PUBLICKEY, GROUPS
+    logging.info("Refreshing keypair")
     PRIVATEKEY, PUBLICKEY = lib.eddsa_generate() # generate keypair
     for group in GROUPS:
         payload = lib.fernet_iek_cipher(group["iek"], PUBLICKEY._key)
@@ -61,19 +66,19 @@ def refresh_keypair() -> None:
                 ciph_data = group_sock.recv(2048)
                 deciph_data = lib.fernet_iek_decipher(group["iek"], ciph_data)
                 if deciph_data is None:
-                    print(f"Error while deciphering receiver {receiver}'s public key")
+                    logging.error(f"Error while deciphering receiver {receiver}'s public key")
                 else:
                     receiver["public"] = lib.signing.VerifyKey(deciph_data)
-                    print(f"Got receiver {receiver}'s public key")
+                    logging.info(f"Got receiver {receiver}'s public key")
                 group_sock.close()
             except Exception as e:
-                print(e, f"error while sending key to receiver {receiver}")
+                logging.error(f"error while sending key to receiver {receiver}: {e}")
         
 
 def update_secret() -> None:
     """Updates the secret of the sensor and sends that update to its receivers across different user_groups"""
     global PRIVATEKEY, GROUPS
-    print("[Sensor] Updating secrets")
+    logging.info("Updating secrets")
     for group in GROUPS:
         group["secret"] = lib.hmac_generate()
         payload = group["secret"] + lib.eddsa_sign(PRIVATEKEY, group["secret"])
@@ -81,7 +86,7 @@ def update_secret() -> None:
         for receiver in group["expected_receivers"]:
             rpub = receiver.get("public", None)
             if rpub is None:
-                print(f"Did not have {receiver}'s pubkey")
+                logging.error(f"Did not have {receiver}'s pubkey")
             else:
                 encr_payload = lib.eddsa_encr(rpub, payload)
                 sock = socket.socket()
@@ -91,7 +96,8 @@ def update_secret() -> None:
                     sock.send(b's'+encr_payload)
                     sock.close()
                 except Exception as e:
-                    print(e)
+                    rip = receiver["ip"]
+                    logging.error(f"Error while sending secret to receiver {rip}: {e}")
 
 DONE = False
 
@@ -113,17 +119,21 @@ sockmt = socket.socket(socket.AF_INET,
 sockmt.settimeout(0.5)
 
 if GATEWAY:
+    logging.info("Launched gateway mode")
     sockmtgate = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sockmtgate.bind(('', LEGACY_PORT))
     groupmtgate = socket.inet_aton(LEGACY_IP)
     mreqgate=struct.pack('4sL',groupmtgate,socket.INADDR_ANY)
     sockmtgate.setsockopt(socket.IPPROTO_IP,socket.IP_ADD_MEMBERSHIP,mreqgate)
+    logging.info("Initialized receiver of raw messages")
     while True:
         data, (addr, _) = sockmtgate.recvfrom(1024)
+        logging.info(f"Received message from {addr}. Signing and distributing")
         for group in GROUPS:
             sign = lib.hmac_sign(group["secret"], data)
             sockmt.sendto(data + sign, (group["asterix_multicast_ip"], group["asterix_multicast_port"]))
 else:
+    logging.info("Launched interactive mode")
     while not DONE:
         message = ""
         try:
@@ -143,6 +153,10 @@ else:
         message_ba = bytearray(48)
         message_ba[:min(len(message), 48)] = bytes(message, "ascii")[:min(len(message), 48)]
         message_bytes = bytes(message_ba)
+        logging.info(f"Sending message [{message_bytes}]")
         for group in GROUPS:
             sign = lib.hmac_sign(group["secret"], message_bytes)
             sockmt.sendto(message_bytes + sign, (group["asterix_multicast_ip"], group["asterix_multicast_port"]))
+    logging.info("Exiting interactive mode")
+
+logging.info("Shutting down node")

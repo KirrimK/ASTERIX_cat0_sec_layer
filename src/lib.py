@@ -14,8 +14,7 @@ import logging
 
 def load_IEK_from_file(filepath: str) -> bytes:
     """
-    Loads the Initiation Encryption Key from a file and installs it.
-    Should be run only once at the start of the agent.
+    Loads the Initiation Encryption Key from a file.
     """
     iek = None
     with open(filepath, 'rb') as file:
@@ -23,16 +22,25 @@ def load_IEK_from_file(filepath: str) -> bytes:
     return iek
 
 def fernet_generate_iek(filepath: str) -> None:
-    """Generates a random Initiation Encryption Key and saves it to a file"""
+    """
+    Generates a random Initiation Encryption Key and saves it to a file
+    """
     with open(filepath, 'wb') as file:
         file.write(Fernet.generate_key())
 
 def fernet_iek_cipher(iek: bytes, plaintext: bytes) -> bytes:
-    """"""
+    """
+    Ciphers the plaintext using the provided IEK (using the Fernet Cipher)
+    Returns the ciphertext
+    """
     f = Fernet(iek)
     return f.encrypt(plaintext)
 
 def fernet_iek_decipher(iek: bytes, ciphertext: bytes) -> bytes|None:
+    """
+    Deciphers the ciphertext using the provided IEK.
+    Returns the plaintext if all provided arguments are correct, otherwise returns None
+    """
     f = Fernet(iek)
     try:
         return f.decrypt(ciphertext)
@@ -68,11 +76,19 @@ def eddsa_verify(verifykey: signing.VerifyKey, signature: bytes, plaintext: byte
         return False
 
 def eddsa_encr(verifykey: signing.VerifyKey, content: bytes) -> bytes:
+    """
+    Encrypts the content with the content's recipient's public key
+    Returns the ciphertext
+    """
     publkey = verifykey.to_curve25519_public_key()
     box = public.SealedBox(publkey)
     return box.encrypt(content)
 
 def eddsa_decr(signkey: signing.SigningKey, ciphertext: bytes) -> bytes|None:
+    """
+    Decrypts the ciphertext with the agent's own private key
+    Returns the plaintext or None if the process failed
+    """
     privkey = signkey.to_curve25519_private_key()
     box = public.SealedBox(privkey)
     try:
@@ -111,6 +127,7 @@ def hmac_verify(key, message, signature) -> bool:
         logging.error(e)
         return False
 
+# ---- CA requests, currently deprecated
 def get_ca_public_key(iek: bytes, ca_addr: str, ca_port: int) -> signing.VerifyKey|None:
     """Contacts the CA server to get its public key"""
     try:
@@ -142,6 +159,8 @@ def send_key_ca_validation(iek: bytes, group_verifykey: signing.VerifyKey, verif
     except Exception as e:
         logging.error(e)
         return None
+# ----
 
+# Launching the lib file as a standalone allows the easy creation of a new IEK
 if __name__ == "__main__":
     fernet_generate_iek(input("Enter the filepath to save the new IEK: "))

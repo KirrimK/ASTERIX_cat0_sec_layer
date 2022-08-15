@@ -16,6 +16,7 @@ import logging
 
 logging.basicConfig(stream=sys.stdout, format="[%(asctime)s][%(levelname)s] - %(message)s", level=logging.INFO)
 
+logging.info("Started Receiver Gateway")
 # getting configuration from files
 CONFIG: dict = json.load(open(sys.argv[1], "r"))
 logging.info(f"Loaded configuration from \"{sys.argv[1]}\"")
@@ -54,6 +55,7 @@ if GATEWAY:
     logging.info("Rule (no HMAC key -> "+ ("relay)" if RELAY_NO_SEC else "drop)"))
 # -----
 
+logging.info("Configuration successfully loaded")
 
 
 PRIVATEKEY, PUBLICKEY = lib.eddsa_generate()
@@ -69,6 +71,7 @@ def listen_sensor_keys_secrets():
         while True:
             client, (address, port) = sock.accept()
             data = client.recv(2048)
+            logging.info(f"Received message from sensor at {address}")
             if data[0] == 107:#b'k':
                 decr_key = lib.fernet_iek_decipher(IEK, data[1:])
                 if decr_key is None:
