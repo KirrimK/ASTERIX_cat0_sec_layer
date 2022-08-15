@@ -132,6 +132,7 @@ if GATEWAY:
         for group in GROUPS:
             sign = lib.hmac_sign(group["secret"], data)
             sockmt.sendto(data + sign, (group["asterix_multicast_ip"], group["asterix_multicast_port"]))
+        logging.info("Message was distributed")
 else:
     logging.info("Launched interactive mode")
     while not DONE:
@@ -157,6 +158,7 @@ else:
         for group in GROUPS:
             sign = lib.hmac_sign(group["secret"], message_bytes)
             sockmt.sendto(message_bytes + sign, (group["asterix_multicast_ip"], group["asterix_multicast_port"]))
+        logging.info("Message was sent")
     logging.info("Exiting interactive mode")
 
 logging.info("Shutting down node")
