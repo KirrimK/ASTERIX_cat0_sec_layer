@@ -8,3 +8,5 @@ SGN_FILE_DST
 iek*
 hmac.png
 fernet.png
+eddsa_sign.png
+eddsa_encr.png
