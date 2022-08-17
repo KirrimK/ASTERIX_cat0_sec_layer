@@ -6,3 +6,5 @@ test/*
 SGN_FILE_DST
 .venv/*
 iek*
+hmac.png
+fernet.png
