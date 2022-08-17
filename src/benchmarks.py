@@ -15,12 +15,12 @@ def benchmark_hmac():
     times_verify = []
     for _ in range(0, 10000):
         message = os.urandom(48)
-        start = time.time()
+        start = time.perf_counter()
         sign = lib.hmac_sign(key, message)
         _ = message + sign
-        end = time.time()
+        end = time.perf_counter()
         _ = lib.hmac_verify(key, message, sign)
-        end_verify = time.time()
+        end_verify = time.perf_counter()
         times_sign.append(end - start)
         times_verify.append(end_verify - end)
     print("Total time Signing: " + str(sum(times_sign)) + " seconds")
@@ -46,11 +46,11 @@ def benchmark_fernet():
     times_decipher = []
     for _ in range(0, 10000):
         _, payload = lib.eddsa_generate()
-        start = time.time()
+        start = time.perf_counter()
         ciphertext = lib.fernet_iek_cipher(iek, payload._key)
-        end = time.time()
+        end = time.perf_counter()
         _ = lib.fernet_iek_decipher(iek, ciphertext)
-        end_decipher = time.time()
+        end_decipher = time.perf_counter()
         times_cipher.append(end - start)
         times_decipher.append(end_decipher - end)
     print("Total time Ciphering: " + str(sum(times_cipher)) + " seconds")
