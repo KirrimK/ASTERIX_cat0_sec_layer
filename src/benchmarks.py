@@ -35,7 +35,8 @@ def benchmark_hmac():
     plt.plot(times_sign, label="Signing")
     plt.subplot(1, 2, 2)
     plt.plot(times_verify, label="Verifying")
-    plt.show()
+    plt.savefig("hmac.png")
+    plt.clf()
 
 def benchmark_fernet():
     print("Benchmarking Fernet...")
@@ -64,7 +65,7 @@ def benchmark_fernet():
     plt.plot(times_cipher, label="Ciphering")
     plt.subplot(1, 2, 2)
     plt.plot(times_decipher, label="Deciphering")
-    plt.show()
+    plt.savefig("fernet.png")
 
 if __name__ == "__main__":
     benchmark_hmac()
