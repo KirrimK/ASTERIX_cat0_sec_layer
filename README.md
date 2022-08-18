@@ -122,8 +122,8 @@ Each gateway has a json configuration file, which follows the following format:
 
 ## Usage
 
-Configure the agents using the config files above, then launch the agents: ```python src/[receiver sender].py <config_file_path>```. (Launch the receivers first, then the senders)
-You can also launch legacy agents: ```python src/basic_[recv sender].py```. These have no config files, but will require you to input the IP addresses of the multicast groups and ports manually.
+Configure the agents using the config files above, then launch the agents: ```python src/[receiver or sender].py <config_file_path>```. (Launch the receivers first, then the senders)
+You can also launch legacy agents: ```python src/basic_[recv or sender].py```. These have no config files, but will require you to input the IP addresses of the multicast groups and ports manually.
 
 ## Notes
 
