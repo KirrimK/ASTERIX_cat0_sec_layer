@@ -1,6 +1,7 @@
 # ASTERIX Category 0 Security Layer - Proof of Concept
 
-(TODO: Add a short description of the project here)
+A proof of concept about securing the ASTERIX protocol against attacks.
+
 
 Authors: Rémy Brévart, Hugo Courtadon, Andy Humbert
 
