@@ -57,7 +57,7 @@ Each HMAC key is supposed to have a lifetime of a day at most.
 
 ### Nominal Phase
 
-Each time a legacy sender sends an ASTERIX message, it will be received the sender gateway, and for each user group, the message will be signed with the HMAC key of the sender for that group, then sent over UDP multicast to all receivers in the group.
+Each time a legacy sender sends an ASTERIX message, it will be received the sender gateway, and for each user group, the hash of the message will be signed with the HMAC key of the sender for that group, then that signature is appended to the message before it is sent over UDP multicast to all receivers in the group.
 
 Each receiver gateway, upon receiving a message, will fetch the HMAC key of the sender gateway and try to verify the signature. The message can then be relayed to a legacy receiver or dropped.
 
