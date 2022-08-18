@@ -83,7 +83,7 @@ Each gateway has a json configuration file, which follows the following format:
     "self_ext_ip": "192.168.0.1", // the agent's own IP address (a trick to fix an issue if sender is on the same machine)
     "legacy_output_mcast_ip": "224.1.1.4", // IP address where insecure messages will be relayed
     "legacy_output_mcast_port": 9998, // associated port
-    "mode": "gateway", // mode of the agent (gateway or interactive): gateway means that the agent will act as a gateway, interactive means that the agent will display received messages to the standard output
+    "mode": "gateway", // mode of the agent (gateway or interactive): gateway means that the agent will act as a gateway, interactive means that the agent will display received messages to the standard output. No legacy receiver is needed if the mode is interactive.
     "actions": { // actions that the agent will perform: relay means that the message will be relayed to the legacy receiver, drop means that the message will be dropped
         "sign_ok": "relay", // action to take when the signature is valid
         "sign_no": "drop", // action to take when the signature is invalid
@@ -100,7 +100,7 @@ Each gateway has a json configuration file, which follows the following format:
 {
     "legacy_input_mcast_ip": "224.1.1.1", // IP address of the multicast group this sender will receive messages to secure from (where the legacy sender is expected to send messages)
     "legacy_input_mcast_port": 9999, // associated port
-    "mode": "gateway", // mode of the agent (gateway or interactive): gateway means that the agent will act as a gateway, interactive means that the agent will send messages from the standard input
+    "mode": "gateway", // mode of the agent (gateway or interactive): gateway means that the agent will act as a gateway, interactive means that the agent will send messages from the standard input. No legacy sender is needed if the mode is interactive.
     "user_groups": [ // list of user groups this sender will relay messages to
         {
             "iek_path": "config/iek1", // path of the file containing the IEK of the user group
@@ -133,4 +133,3 @@ You can also launch legacy agents: ```python src/basic_[recv sender].py```. Thes
 
 - how to share infos between user-groups? Put several IEKs on device? how? study practicality
 - add rule to drop or relay messages of improper size
-- document code and config files
