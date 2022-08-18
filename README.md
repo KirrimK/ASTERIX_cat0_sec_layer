@@ -2,6 +2,8 @@
 
 (TODO: Add a short description of the project here)
 
+Authors: Rémy Brévart, Hugo Courtadon, Andy Humbert
+
 ## Goal of the project
 
 (Note: the specifics of the ASTERIX protocol were not the main point of study of this project)
@@ -123,13 +125,9 @@ Each gateway has a json configuration file, which follows the following format:
 ## Usage
 
 Configure the agents using the config files above, then launch the agents: ```python src/[receiver or sender].py <config_file_path>```. (Launch the receivers first, then the senders)
+
 You can also launch legacy agents: ```python src/basic_[recv or sender].py```. These have no config files, but will require you to input the IP addresses of the multicast groups and ports manually.
-
-## Notes
-
-(cf https://github.com/fernet/spec/blob/master/Spec.md for Fernet cipher spec)
 
 ## Project TODOs
 
-- how to share infos between user-groups? Put several IEKs on device? how? study practicality
 - add rule to drop or relay messages of improper size
