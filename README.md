@@ -109,7 +109,7 @@ Each gateway has a json configuration file, which follows the following format:
 
             "expected_receivers": [ // list of receivers to contact
                 {"ip": "127.0.0.1", "port": 42080},
-                {"ip": "192.168.0.2", "port": 42080}
+                ...
             ],
             "asterix_multicast_ip": "224.1.1.2", // IP address of the multicast group this sender will send secure messages to
             "asterix_multicast_port": 10000 // associated port
