@@ -8,6 +8,17 @@ import os, time
 import matplotlib.pyplot as plt
 import lib
 
+def save_graphs(list_dt: list, label_: str, name_graph: str):
+    plt.figure(figsize=(8, 5))
+    plt.plot(list_dt, label=label_, linewidth=0.5)
+    avg = sum(list_dt)/len(list_dt)
+    plt.plot([avg for _ in list_dt], label="Average", linewidth=1)
+    plt.legend()
+    ax = plt.gca()
+    ax.set_ylim([0, 5*avg])
+    plt.savefig(name_graph)
+    plt.clf()
+
 def benchmark_hmac():
     print("Benchmarking HMAC...")
     key = lib.hmac_generate()
@@ -31,17 +42,8 @@ def benchmark_hmac():
     print("Average time for HMAC verifying: " + str(sum(times_verify) / len(times_verify)) + " seconds")
     print("Max time for HMAC verifying: " + str(max(times_verify)) + " seconds")
     print("Min time for HMAC verifying: " + str(min(times_verify)) + " seconds")
-    plt.figure(figsize=(10, 5))
-    plt.subplot(1, 2, 1)
-    plt.plot(times_sign, label="Signing")
-    plt.plot([sum(times_sign)/len(times_sign) for _ in range(len(times_sign))], label="Average")
-    plt.legend()
-    plt.subplot(1, 2, 2)
-    plt.plot(times_verify, label="Verifying")
-    plt.plot([sum(times_verify)/len(times_verify) for _ in range(len(times_verify))], label="Average")
-    plt.legend()
-    plt.savefig("hmac.png")
-    plt.clf()
+    save_graphs(times_sign, "Signing", "hmac_sign_benchmark.png")
+    save_graphs(times_verify, "Verifying", "hmac_verify_benchmark.png")
 
 def benchmark_fernet():
     print("Benchmarking Fernet...")
@@ -66,17 +68,8 @@ def benchmark_fernet():
     print("Average time for Fernet deciphering: " + str(sum(times_decipher) / len(times_decipher)) + " seconds")
     print("Max time for Fernet deciphering: " + str(max(times_decipher)) + " seconds")
     print("Min time for Fernet deciphering: " + str(min(times_decipher)) + " seconds")
-    plt.figure(figsize=(10, 5))
-    plt.subplot(1, 2, 1)
-    plt.plot(times_cipher, label="Ciphering")
-    plt.plot([sum(times_cipher)/len(times_cipher) for _ in range(len(times_cipher))], label="Average")
-    plt.legend()
-    plt.subplot(1, 2, 2)
-    plt.plot(times_decipher, label="Deciphering")
-    plt.plot([sum(times_decipher)/len(times_decipher) for _ in range(len(times_decipher))], label="Average")
-    plt.legend()
-    plt.savefig("fernet.png")
-    plt.clf()
+    save_graphs(times_cipher, "Ciphering", "fernet_cipher_benchmark.png")
+    save_graphs(times_decipher, "Deciphering", "fernet_decipher_benchmark.png")
 
 def benchmark_eddsa_signatures():
     print("Benchmarking EdDSA Signatures...")
@@ -101,17 +94,8 @@ def benchmark_eddsa_signatures():
     print("Average time for EdDSA verifying: " + str(sum(times_verify) / len(times_verify)) + " seconds")
     print("Max time for EdDSA verifying: " + str(max(times_verify)) + " seconds")
     print("Min time for EdDSA verifying: " + str(min(times_verify)) + " seconds")
-    plt.figure(figsize=(10, 5))
-    plt.subplot(1, 2, 1)
-    plt.plot(times_sign, label="Signing")
-    plt.plot([sum(times_sign)/len(times_sign) for _ in range(len(times_sign))], label="Average")
-    plt.legend()
-    plt.subplot(1, 2, 2)
-    plt.plot(times_verify, label="Verifying")
-    plt.plot([sum(times_verify)/len(times_verify) for _ in range(len(times_verify))], label="Average")
-    plt.legend()
-    plt.savefig("eddsa_sign.png")
-    plt.clf()
+    save_graphs(times_sign, "Signing", "eddsa_sign_benchmark.png")
+    save_graphs(times_verify, "Verifying", "eddsa_verify_benchmark.png")
 
 def benchmark_eddsa_encryption():
     print("Benchmarking EdDSA Encryption...")
@@ -135,17 +119,8 @@ def benchmark_eddsa_encryption():
     print("Average time for EdDSA decryption: " + str(sum(times_decrypt) / len(times_decrypt)) + " seconds")
     print("Max time for EdDSA decryption: " + str(max(times_decrypt)) + " seconds")
     print("Min time for EdDSA decryption: " + str(min(times_decrypt)) + " seconds")
-    plt.figure(figsize=(10, 5))
-    plt.subplot(1, 2, 1)
-    plt.plot(times_encrypt, label="Encrypting")
-    plt.plot([sum(times_encrypt)/len(times_encrypt) for _ in range(len(times_encrypt))], label="Average")
-    plt.legend()
-    plt.subplot(1, 2, 2)
-    plt.plot(times_decrypt, label="Decrypting")
-    plt.plot([sum(times_decrypt)/len(times_decrypt) for _ in range(len(times_decrypt))], label="Average")
-    plt.legend()
-    plt.savefig("eddsa_encr.png")
-    plt.clf()
+    save_graphs(times_encrypt, "Encryption", "eddsa_encrypt_benchmark.png")
+    save_graphs(times_decrypt, "Decryption", "eddsa_decrypt_benchmark.png")
 
 if __name__ == "__main__":
     benchmark_hmac()

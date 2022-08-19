@@ -6,7 +6,4 @@ test/*
 SGN_FILE_DST
 .venv/*
 iek*
-hmac.png
-fernet.png
-eddsa_sign.png
-eddsa_encr.png
+*_benchmark.png
