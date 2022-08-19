@@ -24,4 +24,4 @@ while not DONE:
     if message == "q":
         DONE = True
         break
-    sockmt.sendto(bytes(message, "ascii"), (MULTICAST_IP, MULTICAST_PORT))
+    sockmt.sendto(bytes(message, "utf-8"), (MULTICAST_IP, MULTICAST_PORT))

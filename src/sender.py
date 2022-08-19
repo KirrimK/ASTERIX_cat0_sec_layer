@@ -39,7 +39,6 @@ for group in GROUPS:
     group["iek"] = lib.load_IEK_from_file(group["iek_path"])
     logging.info("Group IEK located at "+group["iek_path"])
     group["secret"] = lib.hmac_generate()
-    logging.info("Group CA can be contacted at "+group["ca_ip"]+":"+str(group["ca_port"]))
     for user in group["expected_receivers"]:
         logging.info("Expecting receiver at "+user["ip"]+":"+str(user["port"]))
     logging.info("Group secure traffic will be sent to multicast "+group["asterix_multicast_ip"]+":"+str(group["asterix_multicast_port"]))
@@ -152,7 +151,7 @@ else:
             refresh_keypair()
             continue
         message_ba = bytearray(48)
-        message_ba[:min(len(message), 48)] = bytes(message, "ascii")[:min(len(message), 48)]
+        message_ba[:min(len(message), 48)] = bytes(message, "utf-8")[:min(len(message), 48)]
         message_bytes = bytes(message_ba)
         logging.info(f"Sending message [{message_bytes}]")
         for group in GROUPS:

@@ -35,10 +35,6 @@ logging.info(f"Listening for secure messages on IP addr {MULTICAST_IP}:{str(MULT
 SELF_EXT_IP: str = CONFIG["self_ext_ip"]
 logging.info(f"Own IP address should be {SELF_EXT_IP}")
 
-CA_IP: str = CONFIG["ca_ip"]
-CA_PORT: int = CONFIG["ca_port"]
-logging.info(f"CA will be contacted at {CA_IP}:{str(CA_PORT)}")
-
 GATEWAY = CONFIG["mode"]=="gateway"
 logging.info("Gateway mode engaged" if GATEWAY else "Gateway mode disengaged")
 
@@ -149,4 +145,8 @@ while True:
                 else:
                     logging.info(f"Dropped message from {addr} (rule: (sign_no -> drop)")
         else:
-            print(f"Message from {addr}: "+str(msg)+(" (verified)" if verif else " (unverified)"))
+            try:
+                dd = data.decode("utf-8")
+                print(f"Message from {addr}: "+dd+" (verified)")
+            except:
+                print(f"Message from {addr}: "+str(msg)+(" (verified)" if verif else " (unverified)"))

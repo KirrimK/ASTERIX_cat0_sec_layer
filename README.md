@@ -77,8 +77,6 @@ Each gateway has a json configuration file, which follows the following format:
 
 {
     "iek_path": "config/iek1", // path of the file containing the IEK of the user group this receiver belongs to
-    "ca_ip": "127.0.0.1", // associated port
-    "ca_port": 42000,   // port of the CA (deprecated, will be removed if no CA is used)
     "multicast_ip": "224.1.1.2", // IP address of the multicast group this receiver belongs to
     "multicast_port": 10000, // associated port
     "bound_ip": "127.0.0.1", // IP address of the interface this receiver is bound to (to receive keys)
@@ -107,8 +105,6 @@ Each gateway has a json configuration file, which follows the following format:
     "user_groups": [ // list of user groups this sender will relay messages to
         {
             "iek_path": "config/iek1", // path of the file containing the IEK of the user group
-            "ca_ip": "127.0.0.1", // IP address of the group's CA (deprecated, will be removed if no CA is used)
-            "ca_port": 42000, // associated port
 
             "expected_receivers": [ // list of receivers to contact
                 {"ip": "127.0.0.1", "port": 42080},

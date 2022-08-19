@@ -18,4 +18,8 @@ mreq=struct.pack('4sL',groupmt,socket.INADDR_ANY)
 sockmt.setsockopt(socket.IPPROTO_IP,socket.IP_ADD_MEMBERSHIP,mreq)
 while True:
     data, (addr, _) = sockmt.recvfrom(1024)
-    print(f"Message from {addr}: "+str(data))
+    try:
+        dd = data.decode("utf-8")
+        print(f"Received message from {addr}: {dd}")
+    except:
+        print(f"Message from {addr}: "+str(data))
