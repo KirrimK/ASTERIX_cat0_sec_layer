@@ -9,7 +9,6 @@ from nacl import signing, public
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes, hmac
 import os
-import requests
 import logging
 
 def load_IEK_from_file(filepath: str) -> bytes:
