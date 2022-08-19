@@ -72,7 +72,7 @@ then, inside that virtual environment, install the requirements (```pip install 
 
 ## Configuration
 
-Each gateway has a json configuration file, which follows the following format:
+Each gateway has a json configuration file, which follows same format as the following examples:
 
 (#this is a comment in the following examples, and should not be in the final files)
 ### Receiver Gateway
