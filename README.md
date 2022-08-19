@@ -74,45 +74,45 @@ then, inside that virtual environment, install the requirements (```pip install 
 
 Each gateway has a json configuration file, which follows the following format:
 
-(//this is a comment in the following examples, and should not be in the final files)
+(#this is a comment in the following examples, and should not be in the final files)
 ### Receiver Gateway
 
-```json
+```python
 {
-    "iek_path": "config/iek1", // path of the file containing the IEK of the user group this receiver belongs to
-    "multicast_ip": "224.1.1.2", // IP address of the multicast group this receiver belongs to
-    "multicast_port": 10000, // associated port
-    "bound_ip": "127.0.0.1", // IP address of the interface this receiver is bound to (to receive keys)
-    "bound_port": 42080, // associated port
-    "self_ext_ip": "192.168.0.1", // the agent's own IP address (a trick to fix an issue if sender is on the same machine)
-    "legacy_output_mcast_ip": "224.1.1.4", // IP address where insecure messages will be relayed
-    "legacy_output_mcast_port": 9998, // associated port
-    "mode": "gateway", // mode of the agent (gateway or interactive): gateway means that the agent will act as a gateway, interactive means that the agent will display received messages to the standard output. No legacy receiver is needed if the mode is interactive.
-    "actions": { // actions that the agent will perform: relay means that the message will be relayed to the legacy receiver, drop means that the message will be dropped
-        "sign_ok": "relay", // action to take when the signature is valid
-        "sign_no": "drop", // action to take when the signature is invalid
-        "no_sec": "drop" // action to take when the message is not secured
+    "iek_path": "config/iek1", # path of the file containing the IEK of the user group this receiver belongs to
+    "multicast_ip": "224.1.1.2", # IP address of the multicast group this receiver belongs to
+    "multicast_port": 10000, # associated port
+    "bound_ip": "127.0.0.1", # IP address of the interface this receiver is bound to (to receive keys)
+    "bound_port": 42080, # associated port
+    "self_ext_ip": "192.168.0.1", # the agent's own IP address (a trick to fix an issue if sender is on the same machine)
+    "legacy_output_mcast_ip": "224.1.1.4", # IP address where insecure messages will be relayed
+    "legacy_output_mcast_port": 9998, # associated port
+    "mode": "gateway", # mode of the agent (gateway or interactive): gateway means that the agent will act as a gateway, interactive means that the agent will display received messages to the standard output. No legacy receiver is needed if the mode is interactive.
+    "actions": { # actions that the agent will perform: relay means that the message will be relayed to the legacy receiver, drop means that the message will be dropped
+        "sign_ok": "relay", # action to take when the signature is valid
+        "sign_no": "drop", # action to take when the signature is invalid
+        "no_sec": "drop" # action to take when the message is not secured
     }
 }
 ```
 
 ### Sender Gateway
 
-```json
+```python
 {
-    "legacy_input_mcast_ip": "224.1.1.1", // IP address of the multicast group this sender will receive messages to secure from (where the legacy sender is expected to send messages)
-    "legacy_input_mcast_port": 9999, // associated port
-    "mode": "gateway", // mode of the agent (gateway or interactive): gateway means that the agent will act as a gateway, interactive means that the agent will send messages from the standard input. No legacy sender is needed if the mode is interactive.
-    "user_groups": [ // list of user groups this sender will relay messages to
+    "legacy_input_mcast_ip": "224.1.1.1", # IP address of the multicast group this sender will receive messages to secure from (where the legacy sender is expected to send messages)
+    "legacy_input_mcast_port": 9999, # associated port
+    "mode": "gateway", # mode of the agent (gateway or interactive): gateway means that the agent will act as a gateway, interactive means that the agent will send messages from the standard input. No legacy sender is needed if the mode is interactive.
+    "user_groups": [ # list of user groups this sender will relay messages to
         {
-            "iek_path": "config/iek1", // path of the file containing the IEK of the user group
+            "iek_path": "config/iek1", # path of the file containing the IEK of the user group
 
-            "expected_receivers": [ // list of receivers to contact
+            "expected_receivers": [ # list of receivers to contact
                 {"ip": "127.0.0.1", "port": 42080},
                 ...
             ],
-            "asterix_multicast_ip": "224.1.1.2", // IP address of the multicast group this sender will send secure messages to
-            "asterix_multicast_port": 10000 // associated port
+            "asterix_multicast_ip": "224.1.1.2", # IP address of the multicast group this sender will send secure messages to
+            "asterix_multicast_port": 10000 # associated port
         },
         ...
     ]
