@@ -74,7 +74,6 @@ Each gateway has a json configuration file, which follows the following format:
 ### Receiver Gateway
 
 ```json
-
 {
     "iek_path": "config/iek1", // path of the file containing the IEK of the user group this receiver belongs to
     "multicast_ip": "224.1.1.2", // IP address of the multicast group this receiver belongs to
@@ -91,13 +90,11 @@ Each gateway has a json configuration file, which follows the following format:
         "no_sec": "drop" // action to take when the message is not secured
     }
 }
-
 ```
 
 ### Sender Gateway
 
 ```json
-
 {
     "legacy_input_mcast_ip": "224.1.1.1", // IP address of the multicast group this sender will receive messages to secure from (where the legacy sender is expected to send messages)
     "legacy_input_mcast_port": 9999, // associated port
@@ -116,7 +113,6 @@ Each gateway has a json configuration file, which follows the following format:
         ...
     ]
 }
-
 ```
 
 ## Usage
