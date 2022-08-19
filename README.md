@@ -25,11 +25,15 @@ To keep being compatible with legacy components, the proof of concept is designe
 - sender gateways: transform unsecure ASTERIX messages from their attached legacy sender into "secured" messages that are sent over the network
 - receiver gateways: receives "secured" messages from the network, processes them and relays them their attached legacy receiver
 
+![An example of topology](schema/Topo.drawio.png)
+
 All those agents are split into user groups, which share the same UDP multicast address (which is how ASTERIX messages are sent over the network):
 - a receiver only belongs to one user group
 - a sender car be shared among multiple user groups
 
 The securisation protocol works as follows:
+
+![Proof of concept schema](schema/AsterixPOCschema.drawio.png)
 
 ### Initialisation Phase
 During the factory initialisation, gateways are fitted with Initiation Encryption Keys (IEKs), AES encryption keys used only for keysharing:
