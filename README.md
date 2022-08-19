@@ -91,7 +91,7 @@ Each gateway has a json configuration file, which follows the following format:
     "actions": { # actions that the agent will perform: relay means that the message will be relayed to the legacy receiver, drop means that the message will be dropped
         "sign_ok": "relay", # action to take when the signature is valid
         "sign_no": "drop", # action to take when the signature is invalid
-        "no_sec": "drop" # action to take when the message is not secured
+        "no_sec": "drop" # action to take when there is no secret stored for the sender
     }
 }
 ```
