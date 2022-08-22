@@ -97,33 +97,33 @@ def benchmark_eddsa_signatures():
     save_graphs(times_sign, "Signing", "eddsa_sign_benchmark.png")
     save_graphs(times_verify, "Verifying", "eddsa_verify_benchmark.png")
 
-def benchmark_eddsa_encryption():
-    print("Benchmarking EdDSA Encryption...")
+def benchmark_curve_encryption():
+    print("Benchmarking Curve25519 Encryption...")
     signkey, verkey = lib.eddsa_generate()
     times_encrypt = []
     times_decrypt = []
     for _ in range(0, 1000):
         message = os.urandom(20+64) #replicate the secret that will be encrypted after being signed
         start = time.perf_counter()
-        ciphertext = lib.eddsa_encr(verkey, message)
+        ciphertext = lib.curve_encr(verkey, message)
         end = time.perf_counter()
-        _ = lib.eddsa_decr(signkey, ciphertext)
+        _ = lib.curve_decr(signkey, ciphertext)
         end_decrypt = time.perf_counter()
         times_encrypt.append(end - start)
         times_decrypt.append(end_decrypt - end)
     print("Total time Encrypting: " + str(sum(times_encrypt)) + " seconds")
-    print("Average time for EdDSA encryption: " + str(sum(times_encrypt) / len(times_encrypt)) + " seconds")
-    print("Max time for EdDSA encryption: " + str(max(times_encrypt)) + " seconds")
-    print("Min time for EdDSA encryption: " + str(min(times_encrypt)) + " seconds")
+    print("Average time for Curve25519 encryption: " + str(sum(times_encrypt) / len(times_encrypt)) + " seconds")
+    print("Max time for Curve25519 encryption: " + str(max(times_encrypt)) + " seconds")
+    print("Min time for Curve25519 encryption: " + str(min(times_encrypt)) + " seconds")
     print("Total time Decrypting: " + str(sum(times_decrypt)) + " seconds")
-    print("Average time for EdDSA decryption: " + str(sum(times_decrypt) / len(times_decrypt)) + " seconds")
-    print("Max time for EdDSA decryption: " + str(max(times_decrypt)) + " seconds")
-    print("Min time for EdDSA decryption: " + str(min(times_decrypt)) + " seconds")
-    save_graphs(times_encrypt, "Encryption", "eddsa_encrypt_benchmark.png")
-    save_graphs(times_decrypt, "Decryption", "eddsa_decrypt_benchmark.png")
+    print("Average time for Curve25519 decryption: " + str(sum(times_decrypt) / len(times_decrypt)) + " seconds")
+    print("Max time for Curve25519 decryption: " + str(max(times_decrypt)) + " seconds")
+    print("Min time for Curve25519 decryption: " + str(min(times_decrypt)) + " seconds")
+    save_graphs(times_encrypt, "Encryption", "curve_encrypt_benchmark.png")
+    save_graphs(times_decrypt, "Decryption", "curve_decrypt_benchmark.png")
 
 if __name__ == "__main__":
     benchmark_hmac()
     benchmark_fernet()
     benchmark_eddsa_signatures()
-    benchmark_eddsa_encryption()
+    benchmark_curve_encryption()

@@ -74,7 +74,7 @@ def eddsa_verify(verifykey: signing.VerifyKey, signature: bytes, plaintext: byte
         logging.error(e)
         return False
 
-def eddsa_encr(verifykey: signing.VerifyKey, content: bytes) -> bytes:
+def curve_encr(verifykey: signing.VerifyKey, content: bytes) -> bytes:
     """
     Encrypts the content with the content's recipient's public key
     Returns the ciphertext
@@ -83,7 +83,7 @@ def eddsa_encr(verifykey: signing.VerifyKey, content: bytes) -> bytes:
     box = public.SealedBox(publkey)
     return box.encrypt(content)
 
-def eddsa_decr(signkey: signing.SigningKey, ciphertext: bytes) -> bytes|None:
+def curve_decr(signkey: signing.SigningKey, ciphertext: bytes) -> bytes|None:
     """
     Decrypts the ciphertext with the agent's own private key
     Returns the plaintext or None if the process failed

@@ -83,7 +83,7 @@ def listen_sensor_keys_secrets():
                         logging.info(f"Sending own ciphered PubKey to {address}")
                         client.send(ciph_data)
             elif data[0] == 115:#b's':
-                signed_key = lib.eddsa_decr(PRIVATEKEY, data[1:])
+                signed_key = lib.curve_decr(PRIVATEKEY, data[1:])
                 if signed_key is None:
                     logging.error(f"Sensor at {address} tried to update its HMAC key but decrypting message failed")
                 else:

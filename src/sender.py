@@ -87,7 +87,7 @@ def update_secret() -> None:
             if rpub is None:
                 logging.error(f"Did not have {receiver}'s pubkey")
             else:
-                encr_payload = lib.eddsa_encr(rpub, payload)
+                encr_payload = lib.curve_encr(rpub, payload)
                 sock = socket.socket()
                 sock.settimeout(1)
                 try:
