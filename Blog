@@ -1,0 +1,36 @@
+Benchmarking HMAC...
+Total time Signing: 0.01418309984728694 seconds
+Average time for HMAC signing: 1.4183099847286939e-05 seconds
+Max time for HMAC signing: 0.0012934000696986914 seconds
+Min time for HMAC signing: 1.179997343569994e-05 seconds
+Total time Verifying: 0.01365859981160611 seconds
+Average time for HMAC verifying: 1.365859981160611e-05 seconds
+Max time for HMAC verifying: 7.219996768981218e-05 seconds
+Min time for HMAC verifying: 1.2499978765845299e-05 seconds
+Benchmarking Fernet...
+Total time Ciphering: 0.06288949970621616 seconds
+Average time for Fernet ciphering: 6.288949970621616e-05 seconds
+Max time for Fernet ciphering: 0.0011155999964103103 seconds
+Min time for Fernet ciphering: 5.640008021146059e-05 seconds
+Total time Deciphering: 0.062087401282042265 seconds
+Average time for Fernet deciphering: 6.208740128204227e-05 seconds
+Max time for Fernet deciphering: 0.00029580004047602415 seconds
+Min time for Fernet deciphering: 5.6600081734359264e-05 seconds
+Benchmarking EdDSA Signatures...
+Total time Signing: 0.04492159897927195 seconds
+Average time for EdDSA signing: 4.492159897927195e-05 seconds
+Max time for EdDSA signing: 9.009998757392168e-05 seconds
+Min time for EdDSA signing: 4.2599975131452084e-05 seconds
+Total time Verifying: 0.10851580067537725 seconds
+Average time for EdDSA verifying: 0.00010851580067537725 seconds
+Max time for EdDSA verifying: 0.00020509993191808462 seconds
+Min time for EdDSA verifying: 0.00010189996100962162 seconds
+Benchmarking EdDSA Encryption...
+Total time Encrypting: 0.23107450001407415 seconds
+Average time for EdDSA encryption: 0.00023107450001407415 seconds
+Max time for EdDSA encryption: 0.0004669999470934272 seconds
+Min time for EdDSA encryption: 0.00022579997312277555 seconds
+Total time Decrypting: 0.142735100351274 seconds
+Average time for EdDSA decryption: 0.000142735100351274 seconds
+Max time for EdDSA decryption: 0.00027269998099654913 seconds
+Min time for EdDSA decryption: 0.00013880000915378332 seconds

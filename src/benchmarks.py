@@ -15,7 +15,7 @@ def save_graphs(list_dt: list, label_: str, name_graph: str):
     plt.plot([avg for _ in list_dt], label="Average", linewidth=1)
     plt.legend()
     ax = plt.gca()
-    ax.set_ylim([0, 5*avg])
+    ax.set_ylim([0, 2*avg])
     plt.savefig(name_graph)
     plt.clf()
 
