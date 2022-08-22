@@ -24,7 +24,7 @@ def benchmark_hmac():
     key = lib.hmac_generate()
     times_sign = []
     times_verify = []
-    for _ in range(0, 10000):
+    for _ in range(0, 1000):
         message = os.urandom(48)
         start = time.perf_counter()
         sign = lib.hmac_sign(key, message)
@@ -51,7 +51,7 @@ def benchmark_fernet():
     iek = lib.load_IEK_from_file("iekt")
     times_cipher = []
     times_decipher = []
-    for _ in range(0, 10000):
+    for _ in range(0, 1000):
         _, payload = lib.eddsa_generate()
         start = time.perf_counter()
         ciphertext = lib.fernet_iek_cipher(iek, payload._key)
@@ -76,7 +76,7 @@ def benchmark_eddsa_signatures():
     signkey, verkey = lib.eddsa_generate()
     times_sign = []
     times_verify = []
-    for _ in range(0, 10000):
+    for _ in range(0, 1000):
         message = os.urandom(20) #replicate the secret that will be signed
         start = time.perf_counter()
         sign = lib.eddsa_sign(signkey, message)
@@ -102,7 +102,7 @@ def benchmark_eddsa_encryption():
     signkey, verkey = lib.eddsa_generate()
     times_encrypt = []
     times_decrypt = []
-    for _ in range(0, 10000):
+    for _ in range(0, 1000):
         message = os.urandom(20+64) #replicate the secret that will be encrypted after being signed
         start = time.perf_counter()
         ciphertext = lib.eddsa_encr(verkey, message)
