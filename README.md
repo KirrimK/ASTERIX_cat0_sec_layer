@@ -31,19 +31,19 @@ All those agents are split into user groups, which share the same UDP multicast 
 - a receiver only belongs to one user group
 - a sender car be shared among multiple user groups
 
-The securisation protocol works as follows:
+The protocol works as follows:
 
 ![Proof of concept schema](schema/AsterixPOCschema.drawio.png)
 
 ### Initialisation Phase
-During the factory initialisation, gateways are fitted with Initiation Encryption Keys (IEKs), AES encryption keys used only for keysharing:
+During the factory initialisation, gateways are fitted with Initiation Encryption Keys (IEKs), AES encryption keys used only for key sharing:
 - for a receiver gateway, the IEK of the user group it belongs to
 - for a sender gateway, the IEKs of each user group it will send information to
 These keys have a lifetime of 5-10 years, and so, should be sufficiently long to prevent attacks (our PoC uses 256-bit long keys).
 
 Each gateway generates its own Ed25519 keypair, which be used for later steps.
 
-### Keysharing Phase
+### Key sharing Phase
 
 Each sender gateway will contact each receiver gateway it is supposed to contact over TCP, and send its own public key (encrypted with the IEK of the user group it belongs to).
 In response, the receiver gateway will send its own public key (encrypted with the IEK of the user group it belongs to).
