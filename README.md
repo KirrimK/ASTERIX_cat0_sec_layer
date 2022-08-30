@@ -33,7 +33,9 @@ All those agents are split into user groups, which share the same UDP multicast 
 
 The protocol works as follows:
 
-![Proof of concept schema](schema/AsterixPOCschema.drawio.png)
+![Proof of concept schema](schema/SimpChart.drawio.png)
+
+(Note: the above diagram is a simplified version of the real one, which is not shown here for clarity, but is available here: [Complete diagram](schema/AsterixPOCschema.drawio.png))
 
 ### Initialisation Phase
 During the factory initialisation, gateways are fitted with Initiation Encryption Keys (IEKs), AES encryption keys used only for key sharing:
