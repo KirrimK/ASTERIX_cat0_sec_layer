@@ -7,3 +7,4 @@ SGN_FILE_DST
 .venv/*
 iek*
 *_benchmark.png
+.vscode
