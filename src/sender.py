@@ -120,8 +120,8 @@ sockmt.settimeout(0.5)
 if GATEWAY:
     logging.info("Launched gateway mode")
     sockmtgate = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sockmtgate.bind(('', LEGACY_PORT))
-    groupmtgate = socket.inet_aton(LEGACY_IP)
+    sockmtgate.bind(('', LEGACY_PORT)) # type: ignore
+    groupmtgate = socket.inet_aton(LEGACY_IP) # type: ignore
     mreqgate=struct.pack('4sL',groupmtgate,socket.INADDR_ANY)
     sockmtgate.setsockopt(socket.IPPROTO_IP,socket.IP_ADD_MEMBERSHIP,mreqgate)
     logging.info("Initialized receiver of raw messages")
