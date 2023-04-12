@@ -33,20 +33,28 @@ logging.info(f"Listening for secure messages on IP addr {MULTICAST_IP}:{str(MULT
 
 logging.info("Configuration successfully loaded")
 
+interface_ip = '192.168.56.101'
 ###Socket send multicast
 mt_g = (MULTICAST_IP, MULTICAST_PORT)
-sockmts = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sockmts = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 sockmts.settimeout(0.5)
 ttl = struct.pack('b',1)
-sockmts.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
+sockmts.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF, socket.inet_aton(interface_ip))
 
 ###socket receive multicast
-server_address = ('', 10001)
-sockmtr = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+server_address = (MULTICAST_IP, MULTICAST_PORT)
+sockmtr = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+try:
+    sockmtr.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+except AttributeError:
+    pass
+sockmtr.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 32)
+sockmtr.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 1)
+
 sockmtr.bind(server_address)
-group = socket.inet_aton(MULTICAST_IP)
-mreq = struct.pack('4sl', group, socket.INADDR_ANY)
-sockmtr.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+sockmtr.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_IF, socket.inet_aton(interface_ip))
+sockmtr.setsockopt(socket.SOL_IP, socket.IP_ADD_MEMBERSHIP,
+                    socket.inet_aton(MULTICAST_IP)+ socket.inet_aton(interface_ip))
 
 MAX_KEY: str | None = None
 T_INT: int
