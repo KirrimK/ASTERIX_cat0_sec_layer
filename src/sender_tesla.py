@@ -27,43 +27,23 @@ logging.info("Started Sender gateway")
 config: dict = json.load(open(sys.argv[1], "r"))
 logging.info(f"Loaded configuration from \"{sys.argv[1]}\"")
 
-BOUND_IP: str = config["bound_ip"]
-BOUND_PORT: int = config["bound_port"]
-logging.info(f"Binding to IP addr {BOUND_IP}:{str(BOUND_PORT)} for keys")
-
 MULTICAST_IP: str = config["multicast_ip"]
 MULTICAST_PORT: int = config["multicast_port"]
 logging.info(f"Listening for secure messages on IP addr {MULTICAST_IP}:{str(MULTICAST_PORT)}")
 
-SELF_EXT_IP: str = config["self_ext_ip"]
-logging.info(f"Own IP address should be {SELF_EXT_IP}")
-
-GATEWAY = config["mode"]=="gateway"
-logging.info("Gateway mode engaged" if GATEWAY else "Gateway mode disengaged")
-
-if GATEWAY:
-    LEGACY_IP = config["legacy_input_mcast_ip"]
-    LEGACY_PORT = int(config["legacy_input_mcast_port"])
-    logging.info(f"Gateway legacy traffic will be taken from multicast {LEGACY_IP}:{str(LEGACY_PORT)}")
-
-GROUPS: list[dict] = config["user_groups"]
-for group in GROUPS:
-    logging.info("Start of group information")
-    group["iek"] = lib.load_IEK_from_file(group["iek_path"])
-    logging.info("Group IEK located at "+group["iek_path"])
-    group["secret"] = lib.hmac_generate()
-    for user in group["expected_receivers"]:
-        logging.info("Expecting receiver at "+user["ip"]+":"+str(user["port"]))
-    logging.info("Group secure traffic will be sent to multicast "+group["asterix_multicast_ip"]+":"+str(group["asterix_multicast_port"]))
-    logging.info("End of group information")
-# -----
-
 logging.info("Configuration successfully loaded")
 
 ###Socket
+server_adress = ('10.0.2.15', 10001)
 sockmt = socket.socket(socket.AF_INET,
                          socket.SOCK_DGRAM)
-sockmt.settimeout(0.5)
+sockmt.bind(server_adress)
+ttl = struct.pack('b',1)
+sockmt.setsockopt(socket.IPPROTO_IP,socket.IP_MULTICAST_TTL, ttl)
+sockmt.settimeout(60)
+group = socket.inet_aton(MULTICAST_IP)
+mreq = struct.pack('4sl', group, socket.SOCK_DGRAM)
+sockmt.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
 ###Sender object
 private_seed = b"Hello world"
@@ -76,22 +56,17 @@ max_key = sender.key_chain[len(sender.key_chain)-1]
 
 ###Syncronisation
 def syncro(max_key, T_int, T0, chain_lenght, disclosure_delay, sockmt):
-    sock = socket.socket()
     try:
-        sock.bind((BOUND_IP, BOUND_PORT))
-        sock.listen()
         while True:
-                client, (address, port) = sock.accept()
-                data = client.recv(2048)
-                logging.info(f"Received nonce from receiver at {address}")
-                nonce = client.recv(2048)
-                sender_time = time()
-                sockmt.sendto((nonce, max_key, T_int, T0, chain_lenght, disclosure_delay, sender_time), (group["asterix_multicast_ip"], group["asterix_multicast_port"]))
-                logging.info("Sent sender time and necessary information to receiver at {add}")
+            nonce, address = sockmt.recv(2048)
+            logging.info(f"Received nonce from receiver at {address}")
+            sender_time = time()
+            sockmt.sendto((nonce, max_key, T_int, T0, chain_lenght, disclosure_delay, sender_time), (MULTICAST_IP,MULTICAST_PORT))
+            logging.info("Sent sender time and necessary information to receiver at {add}")
     except Exception as e:
         print(e)
-    sock.close()
             
-
+thd_syncro = threading.Thread(target=syncro, args=(max_key, sender.T_int, sender.T0, N, sender.d, sockmt))
+thd_syncro.start()
 
 
