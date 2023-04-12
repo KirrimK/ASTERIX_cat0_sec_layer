@@ -36,7 +36,7 @@ logging.info("Configuration successfully loaded")
 ###Socket send multicast
 mt_g = (MULTICAST_IP, MULTICAST_PORT)
 sockmts = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sockmts.settimeout(60)
+sockmts.settimeout(0.5)
 ttl = struct.pack('b',1)
 sockmts.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
 
