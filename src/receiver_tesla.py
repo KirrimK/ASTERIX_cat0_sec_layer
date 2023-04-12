@@ -87,15 +87,16 @@ def syncro_resp():
 thd_syncro = threading.Thread(target=syncro_resp)
 thd_syncro.start()
 
-def syncro_init(nonce):
+def syncro_init():
     receiver_time = time()
-    sockmts.sendto(nonce, (MULTICAST_IP,MULTICAST_PORT))
-    logging.info("Sent nonce to sender")
+    global NONCE, MULTICAST_IP, MULTICAST_PORT
+    sockmts.sendto(NONCE, (MULTICAST_IP,MULTICAST_PORT))
+    logging.info("Sent nonce {NONCE} to sender")
     return receiver_time
 
 def syncro():
     global MAX_KEY, T_INT, T0, CHAIN_LENGHT, DISCLOSURE_DELAY, SENDER_TIME, TIME_RESP, NONCE
-    receiver_time = syncro_init(NONCE)
+    receiver_time = syncro_init()
     while MAX_KEY == None:
         sleep(1)
     D_t = SENDER_TIME - receiver_time + 0.1
