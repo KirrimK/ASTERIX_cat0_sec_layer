@@ -33,17 +33,20 @@ logging.info(f"Listening for secure messages on IP addr {MULTICAST_IP}:{str(MULT
 
 logging.info("Configuration successfully loaded")
 
-###socket
-server_adress = ('10.0.2.15', 10000)
-sockmt = socket.socket(socket.AF_INET,
-                         socket.SOCK_DGRAM)
-sockmt.bind(server_adress)
+###Socket send multicast
+mt_g = (MULTICAST_IP, MULTICAST_PORT)
+sockmts = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sockmts.settimeout(60)
 ttl = struct.pack('b',1)
-sockmt.setsockopt(socket.IPPROTO_IP,socket.IP_MULTICAST_TTL, ttl)
-sockmt.settimeout(60)
+sockmts.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
+
+###socket receive multicast
+server_address = ('', 10001)
+sockmtr = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sockmtr.bind(server_address)
 group = socket.inet_aton(MULTICAST_IP)
-mreq = struct.pack('4sl', group, socket.SOCK_DGRAM)
-sockmt.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+mreq = struct.pack('4sl', group, socket.INADDR_ANY)
+sockmtr.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
 MAX_KEY: str | None = None
 T_INT: int
@@ -56,10 +59,9 @@ NONCE = bytes(secrets.token_hex(16), 'utf-8')
 
 def syncro_resp():
     global MAX_KEY, T_INT, T0, CHAIN_LENGHT, DISCLOSURE_DELAY, SENDER_TIME, TIME_RESP, NONCE
-    sock = socket.socket()
     try:
         while True:
-                nonce_resp, address = sockmt.recv(2048)
+                nonce_resp, address = sockmtr.recv(2048)
                 logging.info(f"Received response to nonce from sender at {address}")
                 if isinstance(nonce_resp, (tuple)) and nonce_resp[0] == NONCE: 
                     TIME_RESP = time()
@@ -72,7 +74,6 @@ def syncro_resp():
                     logging.info("Successfully receive parameters from sender at {address}")
     except Exception as e:
         print(e)
-    sock.close()
     logging.info("Socket timed out")
 
 thd_syncro = threading.Thread(target=syncro_resp)
@@ -80,7 +81,7 @@ thd_syncro.start()
 
 def syncro_init(nonce):
     receiver_time = time()
-    sockmt.sendto(nonce, (MULTICAST_IP,MULTICAST_PORT))
+    sockmts.sendto(nonce, (MULTICAST_IP,MULTICAST_PORT))
     logging.info("Sent nonce to sender")
     return receiver_time
 

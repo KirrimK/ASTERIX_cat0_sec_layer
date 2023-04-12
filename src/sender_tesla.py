@@ -33,17 +33,20 @@ logging.info(f"Listening for secure messages on IP addr {MULTICAST_IP}:{str(MULT
 
 logging.info("Configuration successfully loaded")
 
-###Socket
-server_adress = ('10.0.2.15', 10001)
-sockmt = socket.socket(socket.AF_INET,
-                         socket.SOCK_DGRAM)
-sockmt.bind(server_adress)
+###Socket send multicast
+mt_g = (MULTICAST_IP, MULTICAST_PORT)
+sockmts = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sockmts.settimeout(60)
 ttl = struct.pack('b',1)
-sockmt.setsockopt(socket.IPPROTO_IP,socket.IP_MULTICAST_TTL, ttl)
-sockmt.settimeout(60)
+sockmts.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
+
+###socket receive multicast
+server_address = ('', 10001)
+sockmtr = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sockmtr.bind(server_address)
 group = socket.inet_aton(MULTICAST_IP)
-mreq = struct.pack('4sl', group, socket.SOCK_DGRAM)
-sockmt.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+mreq = struct.pack('4sl', group, socket.INADDR_ANY)
+sockmtr.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
 ###Sender object
 private_seed = b"Hello world"
@@ -55,18 +58,20 @@ sender = tesla.sender_setup(private_seed=private_seed, key_chain_length=N, rate=
 max_key = sender.key_chain[len(sender.key_chain)-1]
 
 ###Syncronisation
-def syncro(max_key, T_int, T0, chain_lenght, disclosure_delay, sockmt):
+def syncro(max_key, T_int, T0, chain_lenght, disclosure_delay):
     try:
         while True:
-            nonce, address = sockmt.recv(2048)
+            print('hi')
+            nonce, address = sockmtr.recv(2048)
             logging.info(f"Received nonce from receiver at {address}")
             sender_time = time()
-            sockmt.sendto((nonce, max_key, T_int, T0, chain_lenght, disclosure_delay, sender_time), (MULTICAST_IP,MULTICAST_PORT))
+            payload = struct.pack('8iiiiif', nonce, max_key, T_int, T0, chain_lenght, disclosure_delay, sender_time)
+            sockmts.sendto(payload, (MULTICAST_IP,MULTICAST_PORT))
             logging.info("Sent sender time and necessary information to receiver at {add}")
     except Exception as e:
         print(e)
             
-thd_syncro = threading.Thread(target=syncro, args=(max_key, sender.T_int, sender.T0, N, sender.d, sockmt))
+thd_syncro = threading.Thread(target=syncro, args=(max_key, sender.T_int, sender.T0, N, sender.d))
 thd_syncro.start()
 
 
