@@ -18,7 +18,7 @@ import time
 import logging
 import TESLA.main_RFC as tesla
 from math import ceil, floor
-from time import time # perf_counter, sleep
+from time import time, sleep # perf_counter, sleep
 
 logging.basicConfig(stream=sys.stdout, format="[%(asctime)s][%(levelname)s] - %(message)s", level=logging.INFO)
 logging.info("Started Sender gateway")
@@ -37,7 +37,7 @@ interface_ip = '192.168.56.101'
 ###Socket send multicast
 mt_g = (MULTICAST_IP, MULTICAST_PORT)
 sockmts = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-sockmts.settimeout(0.5)
+sockmts.settimeout(0.2)
 ttl = struct.pack('b',1)
 sockmts.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF, socket.inet_aton(interface_ip))
 
@@ -69,13 +69,14 @@ max_key = sender.key_chain[len(sender.key_chain)-1]
 def syncro(max_key, T_int, T0, chain_lenght, disclosure_delay):
     try:
         while True:
-            print('hi')
-            nonce, address = sockmtr.recv(2048)
+            nonce, address = sockmtr.recvfrom(2048)
             logging.info(f"Received nonce from receiver at {address}")
             sender_time = time()
-            payload = struct.pack('8iiiiif', nonce, max_key, T_int, T0, chain_lenght, disclosure_delay, sender_time)
+            print(nonce)
+            payload = nonce + bytes(max_key, 'utf-8') + struct.pack('ifiif', T_int, T0, chain_lenght, disclosure_delay, sender_time)
             sockmts.sendto(payload, (MULTICAST_IP,MULTICAST_PORT))
-            logging.info("Sent sender time and necessary information to receiver at {add}")
+            logging.info(f"Sent sender time and necessary information to receiver at {address}")
+            sleep(1)
     except Exception as e:
         print(e)
             

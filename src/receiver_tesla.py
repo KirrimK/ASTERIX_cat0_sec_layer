@@ -37,7 +37,7 @@ interface_ip = '192.168.56.101'
 ###Socket send multicast
 mt_g = (MULTICAST_IP, MULTICAST_PORT)
 sockmts = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-sockmts.settimeout(0.5)
+sockmts.settimeout(0.2)
 ttl = struct.pack('b',1)
 sockmts.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF, socket.inet_aton(interface_ip))
 
@@ -69,9 +69,9 @@ def syncro_resp():
     global MAX_KEY, T_INT, T0, CHAIN_LENGHT, DISCLOSURE_DELAY, SENDER_TIME, TIME_RESP, NONCE
     try:
         while True:
-                nonce_resp, address = sockmtr.recv(2048)
+                nonce_resp, address = sockmtr.recvfrom(2048)
                 logging.info(f"Received response to nonce from sender at {address}")
-                if isinstance(nonce_resp, (tuple)) and nonce_resp[0] == NONCE: 
+                if nonce_resp[:32] == NONCE: 
                     TIME_RESP = time()
                     MAX_KEY = str(nonce_resp[1]) 
                     T_INT = int(nonce_resp[2]) 
@@ -98,7 +98,7 @@ def syncro():
     global MAX_KEY, T_INT, T0, CHAIN_LENGHT, DISCLOSURE_DELAY, SENDER_TIME, TIME_RESP, NONCE
     receiver_time = syncro_init()
     while MAX_KEY == None:
-        sleep(1)
+        sleep(1)    
     D_t = SENDER_TIME - receiver_time + 0.1
     sender_interval = floor((time()* 1000 - T0) * 1.0 / T_INT)
     receiver = tesla.boostrap_receiver(last_key=MAX_KEY, T_int=T_INT, T0 = T0,
