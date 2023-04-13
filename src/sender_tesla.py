@@ -31,7 +31,7 @@ MULTICAST_IP: str = config["multicast_ip"]
 MULTICAST_PORT: int = config["multicast_port"]
 INTERFACE_IP: str = config["interface_ip"]
 logging.info(f"Listening for secure messages on IP addr {MULTICAST_IP}:{str(MULTICAST_PORT)}")
-
+logging.info(f"Interface ip is: {INTERFACE_IP}")
 logging.info("Configuration successfully loaded")
 
 
@@ -53,6 +53,7 @@ sockmtr.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 32)
 sockmtr.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 1)
 
 sockmtr.bind(server_address)
+sockmtr.settimeout(0.5)
 sockmtr.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_IF, socket.inet_aton(INTERFACE_IP))
 sockmtr.setsockopt(socket.SOL_IP, socket.IP_ADD_MEMBERSHIP,
                     socket.inet_aton(MULTICAST_IP)+ socket.inet_aton(INTERFACE_IP))
@@ -71,14 +72,16 @@ def syncro(max_key, T_int, T0, chain_lenght, disclosure_delay):
     try:
         while True:
             nonce, address = sockmtr.recvfrom(2048)
-            logging.info(f"Received nonce from receiver at {address}")
-            sender_time = time()
             print(nonce)
-            print(len(bytes(max_key, 'utf-8')))
-            payload = nonce + bytes(max_key, 'utf-8') + struct.pack('ifiif', T_int, T0, chain_lenght, disclosure_delay, sender_time)
-            sockmts.sendto(payload, (MULTICAST_IP,MULTICAST_PORT))
-            logging.info(f"Sent sender time and necessary information to receiver at {address}")
+            if nonce[:5] == b'Nonce':
+                logging.info(f"Received nonce from receiver at {address}")
+                sender_time = time()
+                payload = nonce + bytes(max_key, 'utf-8') + struct.pack('ifiif', T_int, T0, chain_lenght, disclosure_delay, sender_time)
+                print(payload)
+                sockmts.sendto(payload, (MULTICAST_IP,MULTICAST_PORT))
+                logging.info(f"Sent sender time and necessary information to receiver at {address}")
             sleep(1)
+            nonce = b''
     except Exception as e:
         print(e)
             
