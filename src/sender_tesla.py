@@ -70,17 +70,15 @@ max_key = sender.key_chain[len(sender.key_chain)-1]
 def syncro(max_key, T_int, T0, chain_lenght, disclosure_delay):
     try:
         while True:
-            nonce, address = sockmtr.recvfrom(2048)
-            print(nonce)
+            nonce, address = sockmtr.recvfrom(2048) 
             if nonce[:5] == b'Nonce':
                 logging.info(f"Received nonce from receiver at {address}")
                 sender_time = time()
-                payload = nonce + bytes(max_key, 'utf-8') + struct.pack('ifiif', T_int, T0, chain_lenght, disclosure_delay, sender_time)
+                payload = nonce[5:] + bytes(max_key, 'utf-8') + struct.pack('ifiif', T_int, T0, chain_lenght, disclosure_delay, sender_time)
                 print(payload)
                 sockmts.sendto(payload, (MULTICAST_IP,MULTICAST_PORT))
                 logging.info(f"Sent sender time and necessary information to receiver at {address}")
             sleep(1)
-            nonce = b''
     except Exception as e:
         print(e)
             
