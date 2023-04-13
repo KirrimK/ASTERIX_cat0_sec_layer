@@ -53,7 +53,6 @@ sockmtr.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 32)
 sockmtr.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 1)
 
 sockmtr.bind(server_address)
-sockmtr.settimeout(0.5)
 sockmtr.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_IF, socket.inet_aton(INTERFACE_IP))
 sockmtr.setsockopt(socket.SOL_IP, socket.IP_ADD_MEMBERSHIP,
                     socket.inet_aton(MULTICAST_IP)+ socket.inet_aton(INTERFACE_IP))
