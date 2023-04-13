@@ -82,12 +82,12 @@ def listen():
                     DISCLOSURE_DELAY = int(other_values[3]) 
                     SENDER_TIME = float(other_values[4]) 
                     logging.info(f"Successfully receive parameters from sender at {address}")
-                else:
+                elif len(message)>=100:
                     disclosed_key_index = message[-4:]
                     disclosed_key = message[-68:-4]
                     hmac = message[-100:-68]
                     mes = message[:-100]
-                    packet = (mes, hmac, str(disclosed_key, encoding='utf-8'), int(disclosed_key_index))
+                    packet = (mes, hmac, str(disclosed_key, encoding='utf-8'), int.from_bytes(disclosed_key_index, 'big'))
                     print(packet)
                     tesla.receive_message(packet=packet, receiver_obj=receiver)
     except Exception as e:
