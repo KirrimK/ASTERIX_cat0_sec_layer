@@ -109,7 +109,7 @@ def syncro():
                                           sender_interval=sender_interval, D_t=D_t)
     return receiver
 
-print(syncro())
+print(syncro().__dict__)
      
 
 
