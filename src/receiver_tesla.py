@@ -93,7 +93,7 @@ thd_syncro.start()
 def syncro_init():
     receiver_time = time()
     global NONCE, MULTICAST_IP, MULTICAST_PORT
-    sockmts.sendto(NONCE, (MULTICAST_IP,MULTICAST_PORT))
+    sockmts.sendto(b'Nonce' + NONCE, (MULTICAST_IP,MULTICAST_PORT))
     logging.info("Sent nonce {NONCE} to sender")
     return receiver_time
 
