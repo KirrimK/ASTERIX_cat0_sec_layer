@@ -72,11 +72,11 @@ def syncro_resp():
         while True:
                 nonce_resp, address = sockmtr.recvfrom(2048)
                 logging.info(f"Received response to nonce from sender at {address}")
-                if nonce_resp[5:32] == NONCE: 
-                    print(nonce_resp[:])
+                print(nonce_resp)
+                if nonce_resp[:32] == NONCE: 
                     TIME_RESP = time()
-                    MAX_KEY = str(nonce_resp[37:64+37], 'utf-8') 
-                    other_values =struct.unpack('ifiif', nonce_resp[64+37:])
+                    MAX_KEY = str(nonce_resp[32:64+32], 'utf-8') 
+                    other_values =struct.unpack('ifiif', nonce_resp[64+32:])
                     T_INT = int(other_values[0]) 
                     T0 = float(other_values[1]) 
                     CHAIN_LENGHT = int(other_values[2]) 
