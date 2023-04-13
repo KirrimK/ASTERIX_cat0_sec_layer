@@ -66,27 +66,35 @@ SENDER_TIME: float
 TIME_RESP: float
 NONCE = bytes(secrets.token_hex(16), 'utf-8')
 
-def syncro_resp():
+def listen():
     global MAX_KEY, T_INT, T0, CHAIN_LENGHT, DISCLOSURE_DELAY, SENDER_TIME, TIME_RESP, NONCE
     try:
         while True:
-                nonce_resp, address = sockmtr.recvfrom(2048)
-                if nonce_resp[:32] == NONCE: 
+                message, address = sockmtr.recvfrom(2048)
+                if message[:32] == NONCE: 
                     logging.info(f"Received response to nonce from sender at {address}")
                     TIME_RESP = time()
-                    MAX_KEY = str(nonce_resp[32:64+32], 'utf-8') 
-                    other_values =struct.unpack('ifiif', nonce_resp[64+32:])
+                    MAX_KEY = str(message[32:64+32], 'utf-8') 
+                    other_values =struct.unpack('ifiif', message[64+32:])
                     T_INT = int(other_values[0]) 
                     T0 = float(other_values[1]) 
                     CHAIN_LENGHT = int(other_values[2]) 
                     DISCLOSURE_DELAY = int(other_values[3]) 
                     SENDER_TIME = float(other_values[4]) 
                     logging.info(f"Successfully receive parameters from sender at {address}")
+                else:
+                    disclosed_key_index = message[-4:]
+                    disclosed_key = message[-68:-4]
+                    hmac = message[-100:-68]
+                    mes = message[:-100]
+                    packet = (mes, hmac, str(disclosed_key, encoding='utf-8'), int(disclosed_key_index))
+                    print(packet)
+                    tesla.receive_message(packet=packet, receiver_obj=receiver)
     except Exception as e:
         print(e)
     logging.info("Socket timed out")
 
-thd_syncro = threading.Thread(target=syncro_resp)
+thd_syncro = threading.Thread(target=listen)
 thd_syncro.start()
 
 def syncro_init():
@@ -111,22 +119,6 @@ def syncro():
 receiver = syncro()
 print(receiver.__dict__)
 
-def receive_tesla_packet():
-    try:
-        while True:
-                tesla_packet, address = sockmtr.recvfrom(2048)
-                if tesla_packet[:32] != NONCE:
-                    disclosed_key_index = tesla_packet[-4:]
-                    disclosed_key = tesla_packet[-68:-4]
-                    hmac = tesla_packet[-100:-68]
-                    message = tesla_packet[:-100]
-                    packet = (message, hmac, str(disclosed_key, encoding='utf-8'), int(disclosed_key_index))
-                    print(packet)
-                    tesla.receive_message(packet=packet, receiver_obj=receiver)
-
-    except Exception as e:
-        print(e)
-    logging.info("Socket timed out")
 
 
      
