@@ -85,4 +85,14 @@ def syncro(max_key, T_int, T0, chain_lenght, disclosure_delay):
 thd_syncro = threading.Thread(target=syncro, args=(max_key, sender.T_int, sender.T0, N, sender.d))
 thd_syncro.start()
 
+def send_tesla_packet(message: bytes):
+    tesla_packet = tesla.send_message(message=message, sender_obj=sender, i=1)
+    print(tesla_packet)
+    logging.info(f"Created tesla packet using the message {message}")
+    tesla_packet_bytes = tesla_packet[0]+tesla_packet[1]+bytes(tesla_packet[2], 'utf-8')+ tesla_packet[3].to_bytes(4, byteorder='big')
+    sockmts.sendto(tesla_packet_bytes, (MULTICAST_IP,MULTICAST_PORT))
 
+while True:
+    print('Enter your message')
+    message = bytes(input(), 'utf-8')
+    send_tesla_packet(message=message)

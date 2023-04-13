@@ -71,9 +71,8 @@ def syncro_resp():
     try:
         while True:
                 nonce_resp, address = sockmtr.recvfrom(2048)
-                logging.info(f"Received response to nonce from sender at {address}")
-                print(nonce_resp)
                 if nonce_resp[:32] == NONCE: 
+                    logging.info(f"Received response to nonce from sender at {address}")
                     TIME_RESP = time()
                     MAX_KEY = str(nonce_resp[32:64+32], 'utf-8') 
                     other_values =struct.unpack('ifiif', nonce_resp[64+32:])
@@ -109,7 +108,27 @@ def syncro():
                                           sender_interval=sender_interval, D_t=D_t)
     return receiver
 
-print(syncro().__dict__)
+receiver = syncro()
+print(receiver.__dict__)
+
+def receive_tesla_packet():
+    try:
+        while True:
+                tesla_packet, address = sockmtr.recvfrom(2048)
+                if tesla_packet[:32] != NONCE:
+                    disclosed_key_index = tesla_packet[-4:]
+                    disclosed_key = tesla_packet[-68:-4]
+                    hmac = tesla_packet[-100:-68]
+                    message = tesla_packet[:-100]
+                    packet = (message, hmac, str(disclosed_key, encoding='utf-8'), int(disclosed_key_index))
+                    print(packet)
+                    tesla.receive_message(packet=packet, receiver_obj=receiver)
+
+    except Exception as e:
+        print(e)
+    logging.info("Socket timed out")
+
+
      
 
 
