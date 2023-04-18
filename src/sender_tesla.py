@@ -62,8 +62,8 @@ private_seed = b"Hello world"
 N = 10
 rate = 3
 upper_bound_network_delay = 4
-
-sender = tesla.sender_setup(private_seed=private_seed, key_chain_length=N, rate=rate, upper_bound_network_delay=upper_bound_network_delay)
+rtt = 1
+sender = tesla.sender_setup(private_seed=private_seed, key_chain_length=N, rate=rate, upper_bound_network_delay=upper_bound_network_delay, rtt=rtt)
 max_key = sender.key_chain[len(sender.key_chain)-1]
 
 ###Syncronisation
@@ -86,7 +86,7 @@ thd_syncro = threading.Thread(target=syncro, args=(max_key, sender.T_int, sender
 thd_syncro.start()
 
 def send_tesla_packet(message: bytes):
-    tesla_packet = tesla.send_message(message=message, sender_obj=sender, i=1)
+    tesla_packet = tesla.send_message(message=message, sender_obj=sender)
     print(tesla_packet)
     logging.info(f"Created tesla packet using the message {message}")
     tesla_packet_bytes = tesla_packet[0]+tesla_packet[1]+bytes(tesla_packet[2], 'utf-8')+ tesla_packet[3].to_bytes(4, byteorder='big')
