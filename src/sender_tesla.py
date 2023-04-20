@@ -19,6 +19,7 @@ import logging
 import TESLA.main_RFC as tesla
 from math import ceil, floor
 from time import time, sleep # perf_counter, sleep
+import secrets
 
 logging.basicConfig(stream=sys.stdout, format="[%(asctime)s][%(levelname)s] - %(message)s", level=logging.INFO)
 logging.info("Started Sender gateway")
@@ -65,20 +66,27 @@ upper_bound_network_delay = 4
 rtt = 1
 sender = tesla.sender_setup(private_seed=private_seed, key_chain_length=N, rate=rate, upper_bound_network_delay=upper_bound_network_delay, rtt=rtt)
 max_key = sender.key_chain[len(sender.key_chain)-1]
+IS_UPDATING = False
+NONCE = None
 
 ###Syncronisation
 def syncro(max_key, T_int, T0, chain_lenght, disclosure_delay):
+    global NONCE, IS_UPDATING
     try:
         while True:
             nonce, address = sockmtr.recvfrom(2048) 
             if nonce[:5] == b'Nonce':
                 logging.info(f"Received nonce from receiver at {address}")
                 sender_time = time()
-                payload = nonce[5:] + bytes(max_key, 'utf-8') + struct.pack('ifiif', T_int, T0, chain_lenght, disclosure_delay, sender_time)
+                payload = nonce[5:] + bytes(max_key, 'utf-8') + struct.pack('ffiif', T_int, T0, chain_lenght, disclosure_delay, sender_time)
                 print(payload)
                 sockmts.sendto(payload, (MULTICAST_IP,MULTICAST_PORT))
                 logging.info(f"Sent sender time and necessary information to receiver at {address}")
-            sleep(1)
+            if nonce[:7] == b'Updated':
+                if nonce[7:7+32] == NONCE:
+                    IS_UPDATING == False
+                    logging.info(f"Finished updating key chain")
+            sleep(0.05/1000)
     except Exception as e:
         print(e)
             
@@ -86,8 +94,24 @@ thd_syncro = threading.Thread(target=syncro, args=(max_key, sender.T_int, sender
 thd_syncro.start()
 
 def send_tesla_packet(message: bytes):
-    tesla_packet = tesla.send_message(message=message, sender_obj=sender)
-    print(tesla_packet)
+    global IS_UPDATING, NONCE
+    message_time = time()
+    if message_time >= sender.last_T - sender.d * sender.T_int:
+        tesla.renew_key_chain(sender, message_time)
+
+        NONCE = bytes(secrets.token_bytes(16), 'utf-8')
+        update_recv_packet = b"Update"+ NONCE + bytes(sender.key_chain[0], 'utf-8') + struct.pack("ff", sender.T_int, sender.T0)
+        IS_UPDATING = True
+        sockmts.sendto(update_recv_packet, (MULTICAST_IP,MULTICAST_PORT))
+        while IS_UPDATING == True:
+            sleep(0.01/1000)
+
+        packet = tesla.send_message(message=b"Disclosing previous key chain", sender_obj=sender, end=True)
+        packet_bytes = packet[0]+packet[1]+bytes(packet[2], 'utf-8')+ packet[3].to_bytes(4, byteorder='big')
+        sockmts.sendto(packet_bytes, (MULTICAST_IP,MULTICAST_PORT))
+
+    tesla_packet = tesla.send_message(message=message, sender_obj=sender, end=False)
+    #print(tesla_packet)
     logging.info(f"Created tesla packet using the message {message}")
     tesla_packet_bytes = tesla_packet[0]+tesla_packet[1]+bytes(tesla_packet[2], 'utf-8')+ tesla_packet[3].to_bytes(4, byteorder='big')
     sockmts.sendto(tesla_packet_bytes, (MULTICAST_IP,MULTICAST_PORT))

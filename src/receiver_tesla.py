@@ -75,13 +75,18 @@ def listen():
                     logging.info(f"Received response to nonce from sender at {address}")
                     TIME_RESP = time()
                     MAX_KEY = str(message[32:64+32], 'utf-8') 
-                    other_values =struct.unpack('ifiif', message[64+32:])
-                    T_INT = int(other_values[0]) 
+                    other_values =struct.unpack('ffiif', message[64+32:])
+                    T_INT = float(other_values[0]) 
                     T0 = float(other_values[1]) 
                     CHAIN_LENGHT = int(other_values[2]) 
                     DISCLOSURE_DELAY = int(other_values[3]) 
                     SENDER_TIME = float(other_values[4]) 
                     logging.info(f"Successfully receive parameters from sender at {address}")
+                elif message[:6] == b'Update':
+                    logging.info(f"Updating key chain")
+                    updated_T = struct.unpack('ff', message[38:])
+                    tesla.update_receiver(last_key=str(message[6:38]),T_int=updated_T[0], T0=updated_T[1], receiver=receiver)
+                    sockmts.sendto(b'Updated' + NONCE, (MULTICAST_IP,MULTICAST_PORT))
                 elif len(message)>=100:
                     disclosed_key_index = message[-4:]
                     disclosed_key = message[-68:-4]
