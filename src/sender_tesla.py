@@ -84,7 +84,7 @@ def listen(max_key, T_int, T0, chain_lenght, disclosure_delay):
                 logging.info(f"Sent sender time and necessary information to receiver at {address}")
             if nonce[:3] == b'Fup':
                 if nonce[3:3+32] == NONCE:
-                    IS_UPDATING == False
+                    IS_UPDATING = False
                     logging.info(f"Finished updating key chain")
             sleep(0.05/1000)
     except Exception as e:
@@ -106,16 +106,18 @@ def send_tesla_packet(message: bytes):
         sockmts.sendto(update_recv_packet, (MULTICAST_IP,MULTICAST_PORT))
         while IS_UPDATING == True:
             sleep(0.01/1000)
+            print(IS_UPDATING)
 
         packet = tesla.send_message(message=b"Disclosing previous key chain", sender_obj=sender, end=True)
-        packet_bytes = packet[0]+packet[1]+bytes(packet[2], 'utf-8')+ packet[3].to_bytes(4, byteorder='big')
+        packet_bytes = packet[0]+packet[1]+bytes(packet[2], 'utf-8')+ packet[3].to_bytes(4, byteorder='big',signed=True)
         sockmts.sendto(packet_bytes, (MULTICAST_IP,MULTICAST_PORT))
 
     tesla_packet = tesla.send_message(message=message, sender_obj=sender, end=False)
     #print(tesla_packet)
     logging.info(f"Created tesla packet using the message {message}")
-    tesla_packet_bytes = tesla_packet[0]+tesla_packet[1]+bytes(tesla_packet[2], 'utf-8')+ tesla_packet[3].to_bytes(4, byteorder='big')
+    tesla_packet_bytes = tesla_packet[0]+tesla_packet[1]+bytes(tesla_packet[2], 'utf-8')+ tesla_packet[3].to_bytes(4, byteorder='big', signed=True)
     sockmts.sendto(tesla_packet_bytes, (MULTICAST_IP,MULTICAST_PORT))
+    print("sent")
 
 while True:
     print('Enter your message')

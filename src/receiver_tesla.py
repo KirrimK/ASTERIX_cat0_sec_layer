@@ -93,7 +93,7 @@ def listen():
                     disclosed_key = message[-68:-4]
                     hmac = message[-100:-68]
                     mes = message[:-100]
-                    packet = (mes, hmac, str(disclosed_key, encoding='utf-8'), int.from_bytes(disclosed_key_index, 'big'))
+                    packet = (mes, hmac, str(disclosed_key, encoding='utf-8'), int.from_bytes(disclosed_key_index, 'big', signed=True))
                     print(packet)
                     tesla.receive_message(packet=packet, receiver_obj=receiver)
     except Exception as e:
