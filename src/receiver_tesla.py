@@ -58,7 +58,7 @@ sockmtr.setsockopt(socket.SOL_IP, socket.IP_ADD_MEMBERSHIP,
                     socket.inet_aton(MULTICAST_IP)+ socket.inet_aton(INTERFACE_IP))
 
 MAX_KEY: str | None = None
-T_INT: int
+T_INT: float
 T0: float
 CHAIN_LENGHT: int
 DISCLOSURE_DELAY: int
