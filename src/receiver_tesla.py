@@ -85,6 +85,7 @@ def listen():
                 elif message[:6] == b'Update':
                     logging.info(f"Updating key chain")
                     nonce = message[38:38+32]
+                    print(nonce)
                     updated_T = struct.unpack('ff', message[38+32:])
                     tesla.update_receiver(last_key=str(message[6:38]),T_int=float(updated_T[0]), T0=float(updated_T[1]), sender_interval=floor(((time()+receiver.D_t)-float(updated_T[1])) /  float(updated_T[0])), receiver=receiver)
                     sockmts.sendto(b'Updated' + nonce, (MULTICAST_IP,MULTICAST_PORT))
