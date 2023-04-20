@@ -82,8 +82,8 @@ def listen(max_key, T_int, T0, chain_lenght, disclosure_delay):
                 print(payload)
                 sockmts.sendto(payload, (MULTICAST_IP,MULTICAST_PORT))
                 logging.info(f"Sent sender time and necessary information to receiver at {address}")
-            if nonce[:7] == b'Updated':
-                if nonce[7:7+32] == NONCE:
+            if nonce[:3] == b'Fup':
+                if nonce[3:3+32] == NONCE:
                     IS_UPDATING == False
                     logging.info(f"Finished updating key chain")
             sleep(0.05/1000)
@@ -100,7 +100,7 @@ def send_tesla_packet(message: bytes):
         tesla.renew_key_chain(sender, message_time)
 
         NONCE = bytes(secrets.token_hex(16), 'utf-8')
-        print(f"key 0: {sender.key_chain[0]}")
+        print(f"{NONCE}, {bytes(sender.key_chain[0], 'utf-8')}, {sender.T_int, sender.T0}")
         update_recv_packet = b"Update"+ NONCE + bytes(sender.key_chain[0], 'utf-8') + struct.pack("ff", sender.T_int, sender.T0)
         IS_UPDATING = True
         sockmts.sendto(update_recv_packet, (MULTICAST_IP,MULTICAST_PORT))

@@ -87,7 +87,7 @@ def listen():
                     nonce = message[6:38]
                     updated_T = struct.unpack('ff', message[38+64:])
                     tesla.update_receiver(last_key=str(message[38:38+64]),T_int=float(updated_T[0]), T0=float(updated_T[1]), sender_interval=floor(((time()+receiver.D_t)-float(updated_T[1])) /  float(updated_T[0])), receiver=receiver)
-                    sockmts.sendto(b'Updated' + nonce, (MULTICAST_IP,MULTICAST_PORT))
+                    sockmts.sendto(b'Fup' + nonce, (MULTICAST_IP,MULTICAST_PORT))
                 elif len(message)>=100:
                     disclosed_key_index = message[-4:]
                     disclosed_key = message[-68:-4]
