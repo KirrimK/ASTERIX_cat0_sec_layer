@@ -61,8 +61,8 @@ sockmtr.setsockopt(socket.SOL_IP, socket.IP_ADD_MEMBERSHIP,
 ###Sender object
 private_seed = b"Hello world"
 N = 10
-rate = 3
-upper_bound_network_delay = 4
+rate = 0.05
+upper_bound_network_delay = 1
 rtt = 1
 sender = tesla.sender_setup(private_seed=private_seed, key_chain_length=N, rate=rate, upper_bound_network_delay=upper_bound_network_delay, rtt=rtt)
 max_key = sender.key_chain[len(sender.key_chain)-1]
@@ -120,6 +120,8 @@ def send_tesla_packet(message: bytes):
     print("sent")
 
 while True:
-    print('Enter your message')
-    message = bytes(input(), 'utf-8')
-    send_tesla_packet(message=message)
+    print('press s to start sendin messages')
+    key = input()
+    if key == 's':
+        for i in range(100):
+            send_tesla_packet(message=f"{i}".encode("utf-8"))
