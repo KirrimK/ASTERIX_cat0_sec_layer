@@ -119,8 +119,8 @@ def send_tesla_packet(message: bytes):
     sockmts.sendto(tesla_packet_bytes, (MULTICAST_IP,MULTICAST_PORT))
     print("sent")
 
+print('press s to start sendin messages')
 while True:
-    print('press s to start sendin messages')
     key = input()
     if key == 's':
         for i in range(100):
