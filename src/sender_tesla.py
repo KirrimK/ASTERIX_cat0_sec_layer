@@ -70,7 +70,7 @@ IS_UPDATING = False
 NONCE = None
 
 ###Syncronisation
-def syncro(max_key, T_int, T0, chain_lenght, disclosure_delay):
+def listen(max_key, T_int, T0, chain_lenght, disclosure_delay):
     global NONCE, IS_UPDATING
     try:
         while True:
@@ -90,7 +90,7 @@ def syncro(max_key, T_int, T0, chain_lenght, disclosure_delay):
     except Exception as e:
         print(e)
             
-thd_syncro = threading.Thread(target=syncro, args=(max_key, sender.T_int, sender.T0, N, sender.d))
+thd_syncro = threading.Thread(target=listen, args=(max_key, sender.T_int, sender.T0, N, sender.d))
 thd_syncro.start()
 
 def send_tesla_packet(message: bytes):
@@ -99,7 +99,7 @@ def send_tesla_packet(message: bytes):
     if message_time >= sender.last_T - sender.d * sender.T_int:
         tesla.renew_key_chain(sender, message_time)
 
-        NONCE = bytes(secrets.token_bytes(16), 'utf-8')
+        NONCE = bytes(secrets.token_hex(16), 'utf-8')
         update_recv_packet = b"Update"+ NONCE + bytes(sender.key_chain[0], 'utf-8') + struct.pack("ff", sender.T_int, sender.T0)
         IS_UPDATING = True
         sockmts.sendto(update_recv_packet, (MULTICAST_IP,MULTICAST_PORT))
