@@ -60,9 +60,9 @@ sockmtr.setsockopt(socket.SOL_IP, socket.IP_ADD_MEMBERSHIP,
 
 ###Sender object
 private_seed = b"Hello world"
-N = 10
+N = 5
 rate = 0.05
-upper_bound_network_delay = 1
+upper_bound_network_delay = 100
 rtt = 1
 sender = tesla.sender_setup(private_seed=private_seed, key_chain_length=N, rate=rate, upper_bound_network_delay=upper_bound_network_delay, rtt=rtt)
 max_key = sender.key_chain[len(sender.key_chain)-1]
@@ -106,7 +106,6 @@ def send_tesla_packet(message: bytes):
         sockmts.sendto(update_recv_packet, (MULTICAST_IP,MULTICAST_PORT))
         while IS_UPDATING == True:
             sleep(0.01/1000)
-            print(IS_UPDATING)
 
         packet = tesla.send_message(message=b"Disclosing previous key chain", sender_obj=sender, end=True)
         packet_bytes = packet[0]+packet[1]+bytes(packet[2], 'utf-8')+ packet[3].to_bytes(4, byteorder='big',signed=True)
@@ -119,9 +118,11 @@ def send_tesla_packet(message: bytes):
     sockmts.sendto(tesla_packet_bytes, (MULTICAST_IP,MULTICAST_PORT))
     print("sent")
 
+print(sender.__dict__)
 print('press s to start sendin messages')
 while True:
     key = input()
     if key == 's':
-        for i in range(100):
+        for i in range(10):
             send_tesla_packet(message=f"{i}".encode("utf-8"))
+            sleep(rate/1000)
