@@ -100,6 +100,7 @@ def send_tesla_packet(message: bytes):
         tesla.renew_key_chain(sender, message_time)
 
         NONCE = bytes(secrets.token_hex(16), 'utf-8')
+        print(f"key 0: {sender.key_chain[0]}")
         update_recv_packet = b"Update"+ NONCE + bytes(sender.key_chain[0], 'utf-8') + struct.pack("ff", sender.T_int, sender.T0)
         IS_UPDATING = True
         sockmts.sendto(update_recv_packet, (MULTICAST_IP,MULTICAST_PORT))
