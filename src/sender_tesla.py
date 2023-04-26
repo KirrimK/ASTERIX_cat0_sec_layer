@@ -78,7 +78,7 @@ def listen(max_key, T_int, T0, chain_lenght, disclosure_delay):
             if nonce[:5] == b'Nonce':
                 logging.info(f"Received nonce from receiver at {address}")
                 sender_time = time()
-                payload = nonce[5:] + bytes(max_key, 'utf-8') + struct.pack('ffiif', T_int, T0, chain_lenght, disclosure_delay, sender_time)
+                payload = nonce[5:] + bytes(max_key, 'utf-8') + struct.pack('ddiif', T_int, T0, chain_lenght, disclosure_delay, sender_time)
                 print(payload)
                 sockmts.sendto(payload, (MULTICAST_IP,MULTICAST_PORT))
                 logging.info(f"Sent sender time and necessary information to receiver at {address}")

@@ -75,7 +75,7 @@ def listen():
                     logging.info(f"Received response to nonce from sender at {address}")
                     TIME_RESP = time()
                     MAX_KEY = str(message[32:64+32], 'utf-8') 
-                    other_values =struct.unpack('ffiif', message[64+32:])
+                    other_values =struct.unpack('ddiif', message[64+32:])
                     T_INT = float(other_values[0]) 
                     T0 = float(other_values[1]) 
                     CHAIN_LENGHT = int(other_values[2]) 
