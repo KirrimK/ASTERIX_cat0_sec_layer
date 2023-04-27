@@ -67,9 +67,11 @@ TIME_RESP: float
 NONCE = bytes(secrets.token_hex(16), 'utf-8')
 TIME_START : float | None = None
 TIME_END: float | None = None
+LIST_TIME= []
+TRIES = 0
 
 def listen():
-    global MAX_KEY, T_INT, T0, CHAIN_LENGHT, DISCLOSURE_DELAY, SENDER_TIME, TIME_RESP, NONCE, TIME_START, TIME_END
+    global MAX_KEY, T_INT, T0, CHAIN_LENGHT, DISCLOSURE_DELAY, SENDER_TIME, TIME_RESP, NONCE, TIME_START, TIME_END, LIST_TIME, TRIES
     try:
         while True:
                 message, address = sockmtr.recvfrom(2048)
@@ -85,7 +87,7 @@ def listen():
                     SENDER_TIME = float(other_values[4]) 
                     logging.info(f"Successfully receive parameters from sender at {address}")
                 elif message[:6] == b'Update':
-                    logging.info(f"Updating key chain")
+                    #logging.info(f"Updating key chain")
                     nonce = message[6:38]
                     updated_T = struct.unpack('dd', message[38+64:])
                     tesla.update_receiver(last_key=str(message[38:38+64], encoding='utf-8'),T_int=float(updated_T[0]), T0=float(updated_T[1]), sender_interval=floor(((time()+receiver.D_t)-float(updated_T[1])) /  float(updated_T[0])), receiver=receiver)
@@ -94,10 +96,13 @@ def listen():
                     TIME_END = time()
                     assert TIME_END != None and TIME_START != None
                     tot_time = TIME_END-TIME_START
-                    print(f"nb auth messages: {receiver.nb_authenticated_message}")
-                    print(f"Total time: {tot_time}, average time: {tot_time/10000}")
+                    LIST_TIME.append(tot_time)
+                    print(f"Average process time for one message at iteration {TRIES} is: {sum(LIST_TIME)/(TRIES*1000)}")
+                    #print(f"nb auth messages: {receiver.nb_authenticated_message}")
+                    #print(f"Total time: {tot_time}, average time: {tot_time/10000}")
                 elif message[:5] == b'start':
                     TIME_START = time()
+                    TRIES += 1
                 elif len(message)>=100:
                     recv_time = time()
                     disclosed_key_index = message[-4:]
