@@ -60,7 +60,7 @@ sockmtr.setsockopt(socket.SOL_IP, socket.IP_ADD_MEMBERSHIP,
 
 ###Sender object
 private_seed = b"Hello world"
-N = 5
+N = 100
 rate = 0.05
 upper_bound_network_delay = 100
 rtt = 1
@@ -123,6 +123,8 @@ print('press s to start sendin messages')
 while True:
     key = input()
     if key == 's':
-        for i in range(1000):
+        send_tesla_packet(message=b'start')
+        for i in range(10000):
             send_tesla_packet(message=f"{i}".encode("utf-8"))
             sleep(rate/1000)
+        send_tesla_packet(message=b'fin')

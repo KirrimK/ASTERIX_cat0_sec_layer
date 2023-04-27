@@ -65,9 +65,11 @@ DISCLOSURE_DELAY: int
 SENDER_TIME: float
 TIME_RESP: float
 NONCE = bytes(secrets.token_hex(16), 'utf-8')
+TIME_START : float | None = None
+TIME_END: float | None = None
 
 def listen():
-    global MAX_KEY, T_INT, T0, CHAIN_LENGHT, DISCLOSURE_DELAY, SENDER_TIME, TIME_RESP, NONCE
+    global MAX_KEY, T_INT, T0, CHAIN_LENGHT, DISCLOSURE_DELAY, SENDER_TIME, TIME_RESP, NONCE, TIME_START, TIME_END
     try:
         while True:
                 message, address = sockmtr.recvfrom(2048)
@@ -88,6 +90,13 @@ def listen():
                     updated_T = struct.unpack('dd', message[38+64:])
                     tesla.update_receiver(last_key=str(message[38:38+64], encoding='utf-8'),T_int=float(updated_T[0]), T0=float(updated_T[1]), sender_interval=floor(((time()+receiver.D_t)-float(updated_T[1])) /  float(updated_T[0])), receiver=receiver)
                     sockmts.sendto(b'Fup' + nonce, (MULTICAST_IP,MULTICAST_PORT))
+                elif message[:3] == b'fin':
+                    TIME_END = time()
+                elif message[:4] == b'start':
+                    TIME_START = time()
+                    assert TIME_END != None and TIME_START != None
+                    tot_time = TIME_END-TIME_START
+                    print(f"Total time: {tot_time}, average time: {tot_time/10000}")
                 elif len(message)>=100:
                     recv_time = time()
                     disclosed_key_index = message[-4:]
@@ -95,7 +104,7 @@ def listen():
                     hmac = message[-100:-68]
                     mes = message[:-100]
                     packet = (mes, hmac, str(disclosed_key, encoding='utf-8'), int.from_bytes(disclosed_key_index, 'big', signed=True))
-                    print(f"packet: {packet}")
+                    #print(f"packet: {packet}")
                     tesla.receive_message(packet=packet, receiver_obj=receiver, time = recv_time)
     except Exception as e:
         print(e)
