@@ -123,8 +123,9 @@ print('press s to start sendin messages')
 while True:
     key = input()
     if key == 's':
-        send_tesla_packet(message=b'start')
-        for i in range(10000):
-            send_tesla_packet(message=f"{i}".encode("utf-8"))
-            sleep(rate/1000)
-        send_tesla_packet(message=b'fin')
+        for a in range(10):
+            send_tesla_packet(message=b'start')
+            for i in range(10000):
+                send_tesla_packet(message=f"{i}".encode("utf-8"))
+                sleep(rate/1000)
+            send_tesla_packet(message=b'fin')
