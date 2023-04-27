@@ -108,13 +108,13 @@ def send_tesla_packet(message: bytes):
             sleep(0.01/1000)
 
         packet = tesla.send_message(message=b"Disclosing previous key chain", sender_obj=sender, end=True)
-        packet_bytes = packet[0]+packet[1]+bytes(packet[2], 'utf-8')+ packet[3].to_bytes(4, byteorder='big',signed=True)
+        packet_bytes = packet[0]+packet[1]+bytes(packet[2], 'utf-8')+ packet[3].to_bytes(4, byteorder='big',signed=True) # type: ignore
         sockmts.sendto(packet_bytes, (MULTICAST_IP,MULTICAST_PORT))
 
     tesla_packet = tesla.send_message(message=message, sender_obj=sender, end=False)
     #print(tesla_packet)
     logging.info(f"Created tesla packet using the message {message}")
-    tesla_packet_bytes = tesla_packet[0]+tesla_packet[1]+bytes(tesla_packet[2], 'utf-8')+ tesla_packet[3].to_bytes(4, byteorder='big', signed=True)
+    tesla_packet_bytes = tesla_packet[0]+tesla_packet[1]+bytes(tesla_packet[2], 'utf-8')+ tesla_packet[3].to_bytes(4, byteorder='big', signed=True) # type: ignore
     sockmts.sendto(tesla_packet_bytes, (MULTICAST_IP,MULTICAST_PORT))
     print("sent")
 
@@ -123,6 +123,6 @@ print('press s to start sendin messages')
 while True:
     key = input()
     if key == 's':
-        for i in range(10):
+        for i in range(1000):
             send_tesla_packet(message=f"{i}".encode("utf-8"))
             sleep(rate/1000)

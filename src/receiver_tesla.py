@@ -86,7 +86,7 @@ def listen():
                     logging.info(f"Updating key chain")
                     nonce = message[6:38]
                     updated_T = struct.unpack('dd', message[38+64:])
-                    tesla.update_receiver(last_key=str(message[38:38+64]),T_int=float(updated_T[0]), T0=float(updated_T[1]), sender_interval=floor(((time()+receiver.D_t)-float(updated_T[1])) /  float(updated_T[0])), receiver=receiver)
+                    tesla.update_receiver(last_key=str(message[38:38+64], encoding='utf-8'),T_int=float(updated_T[0]), T0=float(updated_T[1]), sender_interval=floor(((time()+receiver.D_t)-float(updated_T[1])) /  float(updated_T[0])), receiver=receiver)
                     sockmts.sendto(b'Fup' + nonce, (MULTICAST_IP,MULTICAST_PORT))
                 elif len(message)>=100:
                     recv_time = time()
@@ -95,6 +95,7 @@ def listen():
                     hmac = message[-100:-68]
                     mes = message[:-100]
                     packet = (mes, hmac, str(disclosed_key, encoding='utf-8'), int.from_bytes(disclosed_key_index, 'big', signed=True))
+                    print(f"packet: {packet}")
                     tesla.receive_message(packet=packet, receiver_obj=receiver, time = recv_time)
     except Exception as e:
         print(e)
