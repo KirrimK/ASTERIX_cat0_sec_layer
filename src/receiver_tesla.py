@@ -75,7 +75,7 @@ def listen():
                     logging.info(f"Received response to nonce from sender at {address}")
                     TIME_RESP = time()
                     MAX_KEY = str(message[32:64+32], 'utf-8') 
-                    other_values =struct.unpack('ddiif', message[64+32:])
+                    other_values =struct.unpack('ddiid', message[64+32:])
                     T_INT = float(other_values[0]) 
                     T0 = float(other_values[1]) 
                     CHAIN_LENGHT = int(other_values[2]) 
@@ -85,16 +85,17 @@ def listen():
                 elif message[:6] == b'Update':
                     logging.info(f"Updating key chain")
                     nonce = message[6:38]
-                    updated_T = struct.unpack('ff', message[38+64:])
+                    updated_T = struct.unpack('dd', message[38+64:])
                     tesla.update_receiver(last_key=str(message[38:38+64]),T_int=float(updated_T[0]), T0=float(updated_T[1]), sender_interval=floor(((time()+receiver.D_t)-float(updated_T[1])) /  float(updated_T[0])), receiver=receiver)
                     sockmts.sendto(b'Fup' + nonce, (MULTICAST_IP,MULTICAST_PORT))
                 elif len(message)>=100:
+                    recv_time = time()
                     disclosed_key_index = message[-4:]
                     disclosed_key = message[-68:-4]
                     hmac = message[-100:-68]
                     mes = message[:-100]
                     packet = (mes, hmac, str(disclosed_key, encoding='utf-8'), int.from_bytes(disclosed_key_index, 'big', signed=True))
-                    tesla.receive_message(packet=packet, receiver_obj=receiver)
+                    tesla.receive_message(packet=packet, receiver_obj=receiver, time = recv_time)
     except Exception as e:
         print(e)
     logging.info("Socket timed out")
@@ -115,6 +116,7 @@ def syncro():
     while MAX_KEY == None:
         sleep(1)    
     D_t = SENDER_TIME - receiver_time + 0.1
+    print(f"D_t: {D_t}")
     sender_interval = floor((time()* 1000 - T0) * 1.0 / T_INT)
     receiver = tesla.boostrap_receiver(last_key=MAX_KEY, T_int=T_INT, T0 = T0,
                                         chain_length=CHAIN_LENGHT, disclosure_delay=DISCLOSURE_DELAY,

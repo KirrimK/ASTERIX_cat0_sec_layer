@@ -78,7 +78,7 @@ def listen(max_key, T_int, T0, chain_lenght, disclosure_delay):
             if nonce[:5] == b'Nonce':
                 logging.info(f"Received nonce from receiver at {address}")
                 sender_time = time()
-                payload = nonce[5:] + bytes(max_key, 'utf-8') + struct.pack('ddiif', T_int, T0, chain_lenght, disclosure_delay, sender_time)
+                payload = nonce[5:] + bytes(max_key, 'utf-8') + struct.pack('ddiid', T_int, T0, chain_lenght, disclosure_delay, sender_time)
                 print(payload)
                 sockmts.sendto(payload, (MULTICAST_IP,MULTICAST_PORT))
                 logging.info(f"Sent sender time and necessary information to receiver at {address}")
@@ -101,7 +101,7 @@ def send_tesla_packet(message: bytes):
 
         NONCE = bytes(secrets.token_hex(16), 'utf-8')
         print(f"{NONCE}, {bytes(sender.key_chain[0], 'utf-8')}, {sender.T_int, sender.T0}")
-        update_recv_packet = b"Update"+ NONCE + bytes(sender.key_chain[0], 'utf-8') + struct.pack("ff", sender.T_int, sender.T0)
+        update_recv_packet = b"Update"+ NONCE + bytes(sender.key_chain[0], 'utf-8') + struct.pack("dd", sender.T_int, sender.T0)
         IS_UPDATING = True
         sockmts.sendto(update_recv_packet, (MULTICAST_IP,MULTICAST_PORT))
         while IS_UPDATING == True:
