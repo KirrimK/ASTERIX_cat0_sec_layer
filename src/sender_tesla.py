@@ -60,7 +60,7 @@ sockmtr.setsockopt(socket.SOL_IP, socket.IP_ADD_MEMBERSHIP,
 
 ###Sender object
 private_seed = b"Hello world"
-N = 100
+N = 10
 rate = 0.05
 upper_bound_network_delay = 100
 rtt = 1
