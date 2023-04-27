@@ -92,11 +92,12 @@ def listen():
                     sockmts.sendto(b'Fup' + nonce, (MULTICAST_IP,MULTICAST_PORT))
                 elif message[:3] == b'fin':
                     TIME_END = time()
-                elif message[:4] == b'start':
-                    TIME_START = time()
                     assert TIME_END != None and TIME_START != None
                     tot_time = TIME_END-TIME_START
+                    print(f"nb auth messages: {receiver.nb_authenticated_message}")
                     print(f"Total time: {tot_time}, average time: {tot_time/10000}")
+                elif message[:5] == b'start':
+                    TIME_START = time()
                 elif len(message)>=100:
                     recv_time = time()
                     disclosed_key_index = message[-4:]
