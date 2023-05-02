@@ -116,8 +116,7 @@ def listen():
         print(e)
     logging.info("Socket timed out")
 
-thd_syncro = threading.Thread(target=listen)
-thd_syncro.start()
+
 
 def syncro_init():
     receiver_time = time()
@@ -139,11 +138,19 @@ def syncro():
                                           sender_interval=sender_interval, D_t=D_t)
     return receiver
 
-print('press s to synchronize with sender')
-while True:
-    key = input()
-    if key == 's':
-        receiver = syncro()
+
+if __name__=='__main__':
+
+    # start listening on socket sockmtr using a different thread
+    thd_syncro = threading.Thread(target=listen)
+    thd_syncro.start()
+
+    # On user input, syncronize the receiver with a sender 
+    print('press s to synchronize with sender')
+    while True:
+        key = input()
+        if key == 's':
+            receiver = syncro()
 
 
 
