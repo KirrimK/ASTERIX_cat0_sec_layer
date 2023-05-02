@@ -90,8 +90,7 @@ def listen(max_key, T_int, T0, chain_lenght, disclosure_delay):
     except Exception as e:
         print(e)
             
-thd_syncro = threading.Thread(target=listen, args=(max_key, sender.T_int, sender.T0, N, sender.d))
-thd_syncro.start()
+
 
 def send_tesla_packet(message: bytes):
     global IS_UPDATING, NONCE
@@ -119,6 +118,12 @@ def send_tesla_packet(message: bytes):
     #print("sent")
 
 if __name__ == '__main__':
+
+    # start listening on the socket using a different thread
+    thd_syncro = threading.Thread(target=listen, args=(max_key, sender.T_int, sender.T0, N, sender.d))
+    thd_syncro.start()
+
+    # On user input, send 10 times 10000 messages in multicast.
     print('press s to start sendin messages')
     while True:
         key = input()
