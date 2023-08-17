@@ -87,7 +87,8 @@ def listen():
                 message, address = sockmtr.recvfrom(2048)
                 if message[:18] == b'ReplySenderRequest':
                     sender_addr = address
-                    socktcp.send(b'hello')
+                    sender_port = message[18:]
+                    socktcp.send(b'hello', (sender_addr, sender_port))
 
                 if message[:32] == NONCE:
                     logging.info(f"Received response to nonce from sender at {address}")
@@ -168,7 +169,7 @@ if __name__=='__main__':
         if key == 's':
             find_sender()
             sleep(3)
-            receiver = syncro()
+            #receiver = syncro()
 
 
 
