@@ -59,7 +59,14 @@ sockmtr.setsockopt(socket.SOL_IP, socket.IP_ADD_MEMBERSHIP,
                     socket.inet_aton(MULTICAST_IP)+ socket.inet_aton(INTERFACE_IP))
 
 
-
+def send_packet_tcp(sender_addr : str, sender_port: int, message : bytes):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socktcp:
+        socktcp.connect((sender_addr, sender_port))
+        print(message)
+        socktcp.sendall(message)
+        data = socktcp.recv(1024)
+        print(data)
+    return data
 
 MAX_KEY: str | None = None
 T_INT: float
@@ -82,16 +89,15 @@ def listen():
         while True:
                 message, address = sockmtr.recvfrom(2048)
                 if message[:18] == b'ReplySenderRequest':
-                    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socktcp:
-                        sender_addr = address[0]
-                        sender_port = int(struct.unpack('i', message[18:])[0])
-                        socktcp.connect((sender_addr, sender_port))
-                        socktcp.sendall(b'hello')
-                if message[:32] == NONCE:
+                    sender_addr = address[0]
+                    sender_port = int(struct.unpack('i', message[18:])[0])
+                    DICT_KNOWN_SENDER[sender_addr] = {'PORT': sender_port}
+                    receiver_time = time()
+                    resp_nonce = send_packet_tcp(sender_addr, sender_port, b'Nonce' + NONCE)    
                     logging.info(f"Received response to nonce from sender at {address}")
                     TIME_RESP = time()
-                    MAX_KEY = str(message[32:64+32], 'utf-8') 
-                    other_values = struct.unpack('ddiid', message[64+32:])
+                    MAX_KEY = str(resp_nonce[32:64+32], 'utf-8') 
+                    other_values = struct.unpack('ddiid', resp_nonce[64+32:])
                     T_INT = float(other_values[0]) 
                     T0 = float(other_values[1]) 
                     CHAIN_LENGHT = int(other_values[2]) 
@@ -129,15 +135,10 @@ def listen():
     logging.info("Socket timed out")
 
 
+
 def find_sender():
     sockmts.sendto(b'WhoAreTheSenders?', (MULTICAST_IP,MULTICAST_PORT))
 
-def syncro_init():
-    receiver_time = time()
-    global NONCE, MULTICAST_IP, MULTICAST_PORT
-    sockmts.sendto(b'Nonce' + NONCE, (MULTICAST_IP,MULTICAST_PORT))
-    logging.info(f"Sent nonce {NONCE} to sender")
-    return receiver_time
 
 def syncro():
     global MAX_KEY, T_INT, T0, CHAIN_LENGHT, DISCLOSURE_DELAY, SENDER_TIME, TIME_RESP, NONCE
