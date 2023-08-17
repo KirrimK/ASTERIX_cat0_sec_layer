@@ -1,5 +1,6 @@
 {
     "multicast_ip": "224.1.1.10",
     "multicast_port": 10000,
-    "interface_ip": "192.168.56.103"
+    "interface_ip": "192.168.56.103",
+    "tcp_port": 10001
 }

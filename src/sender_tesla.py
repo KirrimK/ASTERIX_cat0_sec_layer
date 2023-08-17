@@ -31,19 +31,19 @@ logging.info(f"Loaded configuration from \"{sys.argv[1]}\"")
 MULTICAST_IP: str = config["multicast_ip"]
 MULTICAST_PORT: int = config["multicast_port"]
 INTERFACE_IP: str = config["interface_ip"]
+TCP_PORT: int = config["tcp_port"]
 logging.info(f"Listening for secure messages on IP addr {MULTICAST_IP}:{str(MULTICAST_PORT)}")
 logging.info(f"Interface ip is: {INTERFACE_IP}")
 logging.info("Configuration successfully loaded")
 
 
-###Socket send multicast
-mt_g = (MULTICAST_IP, MULTICAST_PORT)
+###Socket send multicast UDP
 sockmts = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 sockmts.settimeout(0.2)
 ttl = struct.pack('b',1)
 sockmts.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF, socket.inet_aton(INTERFACE_IP))
 
-###socket receive multicast
+###socket receive multicast UDP
 server_address = (MULTICAST_IP, MULTICAST_PORT)
 sockmtr = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 try:
@@ -58,37 +58,66 @@ sockmtr.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_IF, socket.inet_aton(INTER
 sockmtr.setsockopt(socket.SOL_IP, socket.IP_ADD_MEMBERSHIP,
                     socket.inet_aton(MULTICAST_IP)+ socket.inet_aton(INTERFACE_IP))
 
+###socket TCP for time synchronization, and key chain update for receivers.
+
+socktcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+socktcp.bind(INTERFACE_IP, TCP_PORT)
+socktcp.listen(1)
+
+
+
 ###Sender object
 private_seed = b"Hello world"
 N = 10
 rate_seconds = 0.05
 upper_bound_network_delay_seconds = 100
 rtt_seconds = 1
+
 sender = tesla.sender_setup(private_seed=private_seed, key_chain_length=N, rate_seconds=rate_seconds, upper_bound_network_delay_seconds=upper_bound_network_delay_seconds, rtt_seconds=rtt_seconds)
-max_key = sender.key_chain[len(sender.key_chain)-1]
-IS_UPDATING = False
-NONCE = None
+#max_key = sender.key_chain[len(sender.key_chain)-1]
+
+###Global Variable
+IS_UPDATING : bool = False
+NONCE : str | None =  None
+KNOWN_RECEIVERS : list(str) = []
 
 ###Syncronisation
-def listen(max_key, T_int, T0, chain_lenght, disclosure_delay):
-    global NONCE, IS_UPDATING
+def listenUDP(sender):
+    global INTERFACE_IP
     try:
         while True:
-            nonce, address = sockmtr.recvfrom(2048) 
-            if nonce[:5] == b'Nonce':
+            data, address = sockmtr.recvfrom(2048) 
+            if data[:17] == b'WhoAreTheSenders?':
+                payload = b'ReplySenderRequest'+ bytes(INTERFACE_IP)
+                sockmts.sendto(payload, (MULTICAST_IP,MULTICAST_PORT))
+            if data[:5] == b'Nonce':
                 logging.info(f"Received nonce from receiver at {address}")
                 sender_time = time()
-                payload = nonce[5:] + bytes(max_key, 'utf-8') + struct.pack('ddiid', T_int, T0, chain_lenght, disclosure_delay, sender_time)
-                print(payload)
+                payload = data[5:] + bytes(sender.key_chain[len(sender.key_chain)-1], 'utf-8') + struct.pack('ddiid', sender.T_int, sender.T0, sender.key_chain_lenght, sender.d, sender_time)
                 sockmts.sendto(payload, (MULTICAST_IP,MULTICAST_PORT))
                 logging.info(f"Sent sender time and necessary information to receiver at {address}")
-            if nonce[:3] == b'Fup':
-                if nonce[3:3+32] == NONCE:
+            if data[:17] == b'ConfirmUpdateDone':
+                if data[3:3+32] == NONCE:
                     IS_UPDATING = False
-                    #logging.info(f"Finished updating key chain")
+                    logging.info(f"Finished updating key chain")
             sleep(0.05/1000)
     except Exception as e:
         print(e)
+
+def listenTCP():
+    try:
+        while True:
+            conn, addr = socktcp.accept()
+            print(f"Connection adress: {addr}")
+            data = b''
+            while 1:
+                data += conn.recv(50)
+                if not data: break
+                
+            print(data)
+    except Exception as e:
+        print(e)
+
             
 
 
@@ -120,8 +149,11 @@ def send_tesla_packet(message: bytes):
 if __name__ == '__main__':
 
     # start listening on the socket using a different thread
-    thd_syncro = threading.Thread(target=listen, args=(max_key, sender.T_int, sender.T0, N, sender.d))
-    thd_syncro.start()
+    thd_listenning_UDP = threading.Thread(target=listenUDP, args=sender)
+    thd_listenning_UDP.start()
+
+    thd_listenning_TCP = threading.Thread(target=listenTCP)
+    thd_listenning_TCP.start()
 
     # On user input, send 10 times 10000 messages in multicast.
     print('press s to start sendin messages')

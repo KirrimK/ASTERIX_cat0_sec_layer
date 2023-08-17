@@ -29,6 +29,7 @@ logging.info(f"Loaded configuration from \"{sys.argv[1]}\"")
 MULTICAST_IP: str = CONFIG["multicast_ip"]
 MULTICAST_PORT: int = CONFIG["multicast_port"]
 INTERFACE_IP: str = CONFIG["interface_ip"]
+TCP_PORT: int = config["tcp_port"]
 logging.info(f"Listening for secure messages on IP addr {MULTICAST_IP}:{str(MULTICAST_PORT)}")
 logging.info(f"")
 
@@ -57,6 +58,13 @@ sockmtr.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_IF, socket.inet_aton(INTER
 sockmtr.setsockopt(socket.SOL_IP, socket.IP_ADD_MEMBERSHIP,
                     socket.inet_aton(MULTICAST_IP)+ socket.inet_aton(INTERFACE_IP))
 
+###socket TCP for time synchronization, and key chain update for receivers.
+
+socktcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+socktcp.bind(INTERFACE_IP, TCP_PORT)
+socktcp.listen(1)
+
+
 MAX_KEY: str | None = None
 T_INT: float
 T0: float
@@ -70,12 +78,18 @@ TIME_END: float | None = None
 LIST_TIME= []
 TRIES = 0
 
+DICT_KNOWN_SENDER = {}
+
 def listen():
     global MAX_KEY, T_INT, T0, CHAIN_LENGHT, DISCLOSURE_DELAY, SENDER_TIME, TIME_RESP, NONCE, TIME_START, TIME_END, LIST_TIME, TRIES
     try:
         while True:
                 message, address = sockmtr.recvfrom(2048)
-                if message[:32] == NONCE: 
+                if message[:18] == b'ReplySenderRequest':
+                    sender_addr = address
+                    socktcp.send(b'hello')
+
+                if message[:32] == NONCE:
                     logging.info(f"Received response to nonce from sender at {address}")
                     TIME_RESP = time()
                     MAX_KEY = str(message[32:64+32], 'utf-8') 
@@ -91,7 +105,7 @@ def listen():
                     nonce = message[6:38]
                     updated_T = struct.unpack('dd', message[38+64:])
                     tesla.update_receiver(last_key=str(message[38:38+64], encoding='utf-8'),T_int=float(updated_T[0]), T0=float(updated_T[1]), sender_interval=floor(((time()+receiver.D_t)-float(updated_T[1])) /  float(updated_T[0])), receiver=receiver)
-                    sockmts.sendto(b'Fup' + nonce, (MULTICAST_IP,MULTICAST_PORT))
+                    sockmts.sendto(b'ConfirmUpdateDone' + nonce, (MULTICAST_IP,MULTICAST_PORT))
                 elif message[:3] == b'fin':
                     TIME_END = time()
                     assert TIME_END != None and TIME_START != None
@@ -117,6 +131,8 @@ def listen():
     logging.info("Socket timed out")
 
 
+def find_sender():
+    sockmts.sendto(b'WhoAreTheSenders?', (MULTICAST_IP,MULTICAST_PORT))
 
 def syncro_init():
     receiver_time = time()
@@ -142,14 +158,16 @@ def syncro():
 if __name__=='__main__':
 
     # start listening on socket sockmtr using a different thread
-    thd_syncro = threading.Thread(target=listen)
-    thd_syncro.start()
+    thd_bootstrapping_receiver = threading.Thread(target=listen)
+    thd_bootstrapping_receiver.start()
 
     # On user input, syncronize the receiver with a sender 
     print('press s to synchronize with sender')
     while True:
         key = input()
         if key == 's':
+            find_sender()
+            sleep(3)
             receiver = syncro()
 
 
