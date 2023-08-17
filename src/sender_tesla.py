@@ -58,11 +58,7 @@ sockmtr.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_IF, socket.inet_aton(INTER
 sockmtr.setsockopt(socket.SOL_IP, socket.IP_ADD_MEMBERSHIP,
                     socket.inet_aton(MULTICAST_IP)+ socket.inet_aton(INTERFACE_IP))
 
-###socket TCP for time synchronization, and key chain update for receivers.
 
-socktcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-socktcp.bind((INTERFACE_IP, TCP_PORT))
-socktcp.listen(1)
 
 
 
@@ -79,7 +75,7 @@ sender = tesla.sender_setup(private_seed=private_seed, key_chain_length=N, rate_
 ###Global Variable
 IS_UPDATING : bool = False
 NONCE : str | None =  None
-KNOWN_RECEIVERS : list(str) = []
+KNOWN_RECEIVERS : list[str] = []
 
 ###Syncronisation
 def listenUDP(sender):
@@ -87,8 +83,10 @@ def listenUDP(sender):
     try:
         while True:
             data, address = sockmtr.recvfrom(2048) 
+            print(data)
             if data[:17] == b'WhoAreTheSenders?':
-                payload = b'ReplySenderRequest'+ bytes(INTERFACE_IP)
+                payload = b'ReplySenderRequest'+ struct.pack('i', TCP_PORT)
+                print(f"Payload : {payload}")
                 sockmts.sendto(payload, (MULTICAST_IP,MULTICAST_PORT))
             if data[:5] == b'Nonce':
                 logging.info(f"Received nonce from receiver at {address}")
@@ -105,19 +103,16 @@ def listenUDP(sender):
         print(e)
 
 def listenTCP():
-    try:
-        while True:
-            conn, addr = socktcp.accept()
-            print(f"Connection adress: {addr}")
-            data = b''
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socktcp:
+        socktcp.bind((INTERFACE_IP, TCP_PORT))
+        socktcp.listen()
+        conn, addr = socktcp.accept()
+        with conn:
+            print(f"Connected by {addr}")
             while 1:
-                data += conn.recv(50)
+                data = conn.recv(1024)
                 if not data: break
-                
-            print(data)
-    except Exception as e:
-        print(e)
-
+            print(f"Date: {data}")    
             
 
 
@@ -149,7 +144,7 @@ def send_tesla_packet(message: bytes):
 if __name__ == '__main__':
 
     # start listening on the socket using a different thread
-    thd_listenning_UDP = threading.Thread(target=listenUDP, args=sender)
+    thd_listenning_UDP = threading.Thread(target=listenUDP, args=[sender])
     thd_listenning_UDP.start()
 
     thd_listenning_TCP = threading.Thread(target=listenTCP)
