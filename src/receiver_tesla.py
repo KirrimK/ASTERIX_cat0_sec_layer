@@ -111,7 +111,7 @@ def listen():
                     assert TIME_END != None and TIME_START != None
                     tot_time = TIME_END-TIME_START
                     LIST_TIME.append(tot_time)
-                    print(f"Average process time for one message at iteration {TRIES} is: {sum(LIST_TIME)/(TRIES*1000)}")
+                    print(f"Average process time for one message at iteration {TRIES} is: {sum(LIST_TIME)/(TRIES*10000)}")
                     print(f"nb auth messages: {receiver.nb_authenticated_message}")
                     #print(f"Total time: {tot_time}, average time: {tot_time/10000}")
                 elif message[:5] == b'start':
