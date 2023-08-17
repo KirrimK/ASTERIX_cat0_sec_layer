@@ -29,7 +29,7 @@ logging.info(f"Loaded configuration from \"{sys.argv[1]}\"")
 MULTICAST_IP: str = CONFIG["multicast_ip"]
 MULTICAST_PORT: int = CONFIG["multicast_port"]
 INTERFACE_IP: str = CONFIG["interface_ip"]
-TCP_PORT: int = config["tcp_port"]
+TCP_PORT: int = CONFIG["tcp_port"]
 logging.info(f"Listening for secure messages on IP addr {MULTICAST_IP}:{str(MULTICAST_PORT)}")
 logging.info(f"")
 
