@@ -1,1 +1,3 @@
 https://github.blog/2016-02-01-working-with-submodules/
+
+use: git submodule update --init --recursive
