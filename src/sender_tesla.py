@@ -88,12 +88,6 @@ def listenUDP(sender):
                 payload = b'ReplySenderRequest'+ struct.pack('i', TCP_PORT)
                 print(f"Payload : {payload}")
                 sockmts.sendto(payload, (MULTICAST_IP,MULTICAST_PORT))
-            if data[:5] == b'Nonce':
-                logging.info(f"Received nonce from receiver at {address}")
-                sender_time = time()
-                payload = data[5:] + bytes(sender.key_chain[len(sender.key_chain)-1], 'utf-8') + struct.pack('ddiid', sender.T_int, sender.T0, sender.key_chain_lenght, sender.d, sender_time)
-                sockmts.sendto(payload, (MULTICAST_IP,MULTICAST_PORT))
-                logging.info(f"Sent sender time and necessary information to receiver at {address}")
             if data[:17] == b'ConfirmUpdateDone':
                 if data[3:3+32] == NONCE:
                     IS_UPDATING = False
@@ -103,17 +97,25 @@ def listenUDP(sender):
         print(e)
 
 def listenTCP():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socktcp:
-        socktcp.bind((INTERFACE_IP, TCP_PORT))
-        socktcp.listen()
-        conn, addr = socktcp.accept()
-        with conn:
-            print(f"Connected by {addr}")
-            while 1:
-                data = conn.recv(1024)
-                if not data: break
-            print(f"Date: {data}")    
-            
+    while 1:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socktcp:
+            socktcp.bind((INTERFACE_IP, TCP_PORT))
+            socktcp.listen()
+            conn, addr = socktcp.accept()
+            message = b''
+            with conn:
+                print(f"Connected by {addr}")
+                message = conn.recv(1024)
+                print(f"Message: {message}") 
+                
+                if message[:5] == b'Nonce':
+                    logging.info(f"Received nonce from receiver at {addr}")
+                    sender_time = time()
+                    payload = message[5:32+5] + bytes(sender.key_chain[len(sender.key_chain)-1], 'utf-8') + struct.pack('ddiid', sender.T_int, sender.T0, sender.key_chain_len, sender.d, sender_time)
+                    conn.sendall(payload)
+                    logging.info(f"Sent sender time and necessary information to receiver at {addr}")
+    
+        sleep(1)
 
 
 def send_tesla_packet(message: bytes):
