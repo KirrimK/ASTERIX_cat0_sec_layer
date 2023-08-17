@@ -58,11 +58,7 @@ sockmtr.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_IF, socket.inet_aton(INTER
 sockmtr.setsockopt(socket.SOL_IP, socket.IP_ADD_MEMBERSHIP,
                     socket.inet_aton(MULTICAST_IP)+ socket.inet_aton(INTERFACE_IP))
 
-###socket TCP for time synchronization, and key chain update for receivers.
 
-socktcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-socktcp.bind((INTERFACE_IP, TCP_PORT))
-socktcp.listen(1)
 
 
 MAX_KEY: str | None = None
@@ -86,15 +82,16 @@ def listen():
         while True:
                 message, address = sockmtr.recvfrom(2048)
                 if message[:18] == b'ReplySenderRequest':
-                    sender_addr = address
-                    sender_port = message[18:]
-                    socktcp.send(b'hello', (sender_addr, sender_port))
-
+                    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socktcp:
+                        sender_addr = address[0]
+                        sender_port = int(struct.unpack('i', message[18:])[0])
+                        socktcp.connect((sender_addr, sender_port))
+                        socktcp.sendall(b'hello')
                 if message[:32] == NONCE:
                     logging.info(f"Received response to nonce from sender at {address}")
                     TIME_RESP = time()
                     MAX_KEY = str(message[32:64+32], 'utf-8') 
-                    other_values =struct.unpack('ddiid', message[64+32:])
+                    other_values = struct.unpack('ddiid', message[64+32:])
                     T_INT = float(other_values[0]) 
                     T0 = float(other_values[1]) 
                     CHAIN_LENGHT = int(other_values[2]) 
