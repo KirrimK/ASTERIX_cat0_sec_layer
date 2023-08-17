@@ -61,7 +61,7 @@ sockmtr.setsockopt(socket.SOL_IP, socket.IP_ADD_MEMBERSHIP,
 ###socket TCP for time synchronization, and key chain update for receivers.
 
 socktcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-socktcp.bind(INTERFACE_IP, TCP_PORT)
+socktcp.bind((INTERFACE_IP, TCP_PORT))
 socktcp.listen(1)
 
 
